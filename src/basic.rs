@@ -1041,6 +1041,12 @@ fn section_18_iterators() {
     for item in v.iter() {
         println!("{}", item)
     }
+
+    // same but with index and &item wrapped in a tuple.
+    for item in v.iter().enumerate() {
+        println!("{}", item.1)
+    }
+
     let mut v2 = vec![1, 2, 3];
     for item in v2.iter_mut() {
         *item += 1;
@@ -1110,7 +1116,8 @@ fn section_18_iterators() {
 
     // ── peekable ─────────────────────────────────────────────────────────────
     let mut iter = v.iter().peekable();
-    println!("[§18] peek: {:?}, next: {:?}", iter.peek(), iter.next());
+    println!("[§18] peek: {:?}", iter.peek()); // forsee the future item.
+    println!("[§18] next: {:?}", iter.next()); // iterate to the future item.
 
     // ── scan (stateful map) ───────────────────────────────────────────────────
     let running_sum: Vec<i32> = (1..=5).scan(0, |acc, x| { *acc += x; Some(*acc) }).collect();
@@ -1143,8 +1150,15 @@ fn section_19_collections() {
 
     // entry API — insert-or-update
     scores.entry(String::from("Alice")).and_modify(|s| *s += 5);
-    scores.entry(String::from("Carol")).or_insert(70);     // insert only if absent
-    scores.entry(String::from("Dave")).or_insert_with(|| 80); // lazy insert
+
+    /*
+    // or_insert – even if key "Alice" already exists, compute_expensive_score("Alice") runs
+    scores.entry("Alice").or_insert(compute_expensive_score("Alice"));
+    // or_insert_with – compute_expensive_score is only called if "Bob" is absent
+    scores.entry("Bob").or_insert_with(|| compute_expensive_score("Bob"));
+    */
+    scores.entry(String::from("Carol")).or_insert(70);  // insert only if absent
+    scores.entry(String::from("Dave")).or_insert_with(|| 80);  // lazy insert, the closure
 
     println!("[§19] scores: {:?}", scores);
     println!("[§19] Alice:  {:?}", scores.get("Alice"));
@@ -1188,6 +1202,11 @@ fn section_19_collections() {
     for (k, v) in &btree { print!("{}:{} ", k, v); }
     println!();
 
+    let mut iter = btree.iter().rev();
+    while let Some(v) = iter.next() {
+        print!("key:{}, value:{}", v.0, v.1);
+    }
+
     // ── VecDeque<T> — double-ended queue ────────────────────────────────────
     let mut deque: VecDeque<i32> = VecDeque::new();
     deque.push_back(1);
@@ -1212,13 +1231,18 @@ fn section_20_smart_pointers() {
     println!("[§20] List: {:?}", list);
 
     // ── Rc<T>: reference-counted shared ownership (single-threaded) ───────────
+    // the data inside a Rc is usually immutable, it provides read only shares. However,
+    // with interior mutability, for example, the inside data are wrapped by lock-free
+    // structures or synchronization primitives(Mutex<>, RwLock<>), Atomic types, they
+    // are still mutable via their &self receivers without a mut &self receiver. Keep in mind,
+    // the interior mutability is a design pattern, it is not a language feature.
     let a = Rc::new(String::from("shared"));
-    let b_rc = Rc::clone(&a);      // bump ref count to 2
-    let c_rc = Rc::clone(&a);      // bump ref count to 3
+    let b_rc = Rc::clone(&a);       // bump ref count to 2
+    let mut c_rc = Rc::clone(&a);   // bump ref count to 3
+
     println!("[§20] Rc strong count: {}", Rc::strong_count(&a));  // 3
     println!("[§20] Rc value: {}", a);
     drop(b_rc);
-    println!("[§20] Rc after drop: {}", Rc::strong_count(&a));    // 2
 
     let shared = Rc::new(RefCell::new(vec![1, 2, 3]));
     let a = Rc::clone(&shared);
