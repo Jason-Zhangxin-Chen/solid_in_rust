@@ -1263,6 +1263,7 @@ fn section_20_smart_pointers() {
     println!("[§20] Arc: {:?}", arc2);
 
     // ── Cow<T>: clone-on-write ────────────────────────────────────────────────
+    // Returning data in Cow:
     use std::borrow::Cow;
     fn ensure_no_spaces<'a>(s: &'a str) -> Cow<'a, str> {
         if s.contains(' ') { Cow::Owned(s.replace(' ', "_")) }  // allocates
@@ -1270,6 +1271,14 @@ fn section_20_smart_pointers() {
     }
     println!("[§20] Cow no-op: {}", ensure_no_spaces("hello"));
     println!("[§20] Cow owned: {}", ensure_no_spaces("hello world"));
+
+    // Use Cow data as input:
+    fn process(data: Cow<str>) -> String {
+        let processed = data.replace("foo", "bar"); // this implicitly calls into_owned if needed
+        processed
+    }
+    let r = process(Cow::Borrowed("foo bar"));   // no extra allocation
+    let s = process(Cow::Owned(String::from("foo bar")));
 }
 
 // =============================================================================
