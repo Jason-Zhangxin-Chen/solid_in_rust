@@ -85,23 +85,6 @@ fn main() {
     section_31_attributes();
     section_32_patterns_cheatsheet();
 
-    /*
-    // top lists:
-    section_20_smart_pointers();
-    section_21_interior_mutability();
-    section_22_concurrency();
-    section_24_macros();
-    // 2nd lists:
-    section_29_custom_iterator();
-    section_30_unsafe_raw_pointers();
-    section_31_attributes();
-    section_32_patterns_cheatsheet();
-    // lowest:
-    section_26_type_aliases_newtype();
-    section_27_operator_overloading();
-    section_28_builder_pattern();
-    */
-
     println!("\n✓  All sections ran successfully.");
 }
 
@@ -1288,7 +1271,8 @@ fn section_21_interior_mutability() {
     // ── Cell<T>: Copy types, no borrow overhead ───────────────────────────────
     let c = Cell::new(5);
     let r = &c;
-    r.set(10);                        // mutate through shared ref
+    c.set(11);
+    r.set(12);                        // mutate through shared ref
     println!("[§21] Cell: {}", c.get());
 
     // ── RefCell<T>: any type, runtime borrow checking ─────────────────────────
@@ -1299,6 +1283,7 @@ fn section_21_interior_mutability() {
     // ── Rc<RefCell<T>>: the shared-mutable-state pattern (single-threaded) ────
     let shared = Rc::new(RefCell::new(0i32));
     let c1 = Rc::clone(&shared);
+    // let c2 = shared.clone(); same as below.
     let c2 = Rc::clone(&shared);
     *c1.borrow_mut() += 10;
     *c2.borrow_mut() += 20;
@@ -1315,10 +1300,139 @@ fn section_21_interior_mutability() {
 }
 
 // =============================================================================
-// §22  CONCURRENCY
+// STD::SYNC::Channel
 // =============================================================================
-use std::sync::mpsc;    // multi-producer single-consumer channel
+
+// multi-producer single-consumer channel, the standard, safe, "good enough" channel:
+// * Muti-producer, single-consumer. Only one receiver is allowed.
+// * Unbounded by default, but can be made synchronous/bounded with sync_channel.
+// * Concurrency model, internally a linked list of nodes protected by a mutex + Condvar.
+//     This makes it relatively slow under contention and subject to kernel scheduling noise.
+// * Heap Allocation, allocation per message, unless you use a bounded sync channel with fixed
+//     capacity, which still uses a similar queue.
+// * No batching, each send/recv is a single operation with lock acquisition.
+use std::sync::mpsc;
 use std::thread;
+
+fn std_mpsc_channel() {
+    // ── mpsc channel: send data between threads ────────────────────────────────
+    let (tx, rx) = mpsc::channel::<String>();
+
+    // Multiple producers
+    let tx2 = tx.clone();
+    let h1 = thread::spawn(move || { tx.send(String::from("ping")).unwrap(); });
+    let h2 = thread::spawn(move || { tx2.send(String::from("pong")).unwrap(); });
+    h1.join().unwrap();
+    h2.join().unwrap();
+
+    //drop(tx2);   // all senders dropped → rx.recv() will return Err after queue empty
+
+    for received in rx {
+        println!("[§22] channel received: {}", received);
+    }
+}
+
+
+// =============================================================================
+// CROSSBEAM::Channels
+// =============================================================================
+// *Multiple flavours, unbounded, bounded(cap), zero (rendezvous), and specialized spsc/mpsc/mpmc
+// *Lock-free algorithms (mostly), using atomic operations and careful memory ordering, wait-freedom
+//     in some paths.
+// *Much higher throughput and lower latency than std::mpsc, especially under contention.
+// *Select-like operations supported via select! macro, allowing waiting on multiple channels simultaneously.
+// *Allocation, unbounded channels still allocate per message; bounded channels pre-allocate a buffer,
+//     avoiding per-message allocation.
+// *No batching, still one send/recv per message, but much faster than std::mpsc due to lock-free design.
+fn crossbeam_channels_bounded_spsc() {
+    use crossbeam_channel::bounded;
+
+    let (tx, rx) = bounded::<i32>(4); // capacity 4
+
+    // Producer thread
+    thread::spawn(move || {
+        for i in 0..10 {
+            tx.send(i).unwrap();
+        }
+    });
+
+    // Consumer (main thread)
+    for msg in rx {
+        println!("Received: {}", msg);
+    }
+}
+
+fn crossbeam_channels_unbounded_mpsc() {
+    use crossbeam_channel::unbounded;
+    use std::thread;
+
+    let (tx, rx) = unbounded::<String>();
+
+    // Clone the sender for multiple producers
+    for id in 0..3 {
+        let tx = tx.clone();
+        thread::spawn(move || {
+            for i in 0..5 {
+                tx.send(format!("P{}-{}", id, i)).unwrap();
+            }
+        });
+    }
+    drop(tx); // original sender dropped so receiver can terminate
+
+    for msg in rx {
+        println!("Got: {}", msg);
+    }
+}
+
+fn crossbeam_bounded_queue_spmc() {
+    use crossbeam_queue::ArrayQueue;
+    use std::sync::Arc;
+    use std::thread;
+
+    let queue = Arc::new(ArrayQueue::new(16));
+
+    // Single producer
+    let q_prod = Arc::clone(&queue);
+    thread::spawn(move || {
+        for i in 0..20 {
+            while q_prod.push(i).is_err() {} // spin until slot free
+        }
+    });
+
+    // Multiple consumers
+    for id in 0..3 {
+        let q_cons = Arc::clone(&queue);
+        thread::spawn(move || {
+            loop {
+                match q_cons.pop() {
+                    Some(val) => println!("C{} got {}", id, val),
+                    None => break, // queue empty and producer finished? use a termination flag
+                }
+            }
+        });
+    }
+}
+
+// =============================================================================
+// LMAX Disruptor::Channels
+// =============================================================================
+// * Allocation, a pre-allocated ring buffer with fixed-sized slots. Msg are written into those
+//    slots, no allocation after initialization.
+// * Zero-copy publishing, the producer claims a slot, writes into it, then publishes the sequence
+//    number. Consumers read committed slots.
+// * Batching, both producers and consumers can process multiple events at once, dramatically
+//    reducing overhead.
+// * Extremely low latency and very high throughput. Designed for the LMAX exchange to handle
+//    millions of messages per second with sub-millisecond latency.
+// * Complex dependency graph, you can set up multiple consumers that depend on each other using
+//    a barrier.
+// * Producer types, single-producer(No atomic CAS needed, just a store) or multi-producer (with
+//    atomic CAS). Multiple consumers can be parallel or dependent.
+// * API complexity, requires understanding Sequence, RingBuffer, EventHandler, Barrier. Not a simple
+//    send/recv.
+fn lmax_disruptor_channel_spsc() {
+    // todo: write an example in LMAX disruptor pattern.
+}
 
 fn section_22_concurrency() {
     // ── Basic thread ──────────────────────────────────────────────────────────
@@ -1345,35 +1459,10 @@ fn section_22_concurrency() {
     for h in handles { h.join().unwrap(); }
     println!("[§22] Mutex counter: {}", *counter.lock().unwrap()); // 5
 
-    // ── mpsc channel: send data between threads ────────────────────────────────
-    let (tx, rx) = mpsc::channel::<String>();
-
-    // Multiple producers
-    let tx2 = tx.clone();
-    let h1 = thread::spawn(move || { tx.send(String::from("ping")).unwrap(); });
-    let h2 = thread::spawn(move || { tx2.send(String::from("pong")).unwrap(); });
-    h1.join().unwrap();
-    h2.join().unwrap();
-
-    //drop(tx2);   // all senders dropped → rx.recv() will return Err after queue empty
-
-    for received in rx {
-        println!("[§22] channel received: {}", received);
-    }
-
-    // ── RwLock: many readers, one writer ─────────────────────────────────────
-    use std::sync::RwLock;
-    let data = Arc::new(RwLock::new(vec![1, 2, 3]));
-    {
-        let r1 = data.read().unwrap();
-        let r2 = data.read().unwrap();  // multiple concurrent readers OK
-        println!("[§22] RwLock reads: {:?} {:?}", *r1, *r2);
-    }
-    {
-        let mut w = data.write().unwrap();  // exclusive write lock
-        w.push(4);
-    }
-    println!("[§22] RwLock after write: {:?}", *data.read().unwrap());
+    std_mpsc_channel();
+    crossbeam_bounded_queue_spmc();
+    crossbeam_channels_unbounded_mpsc();
+    crossbeam_channels_bounded_spsc();
 }
 
 // =============================================================================
