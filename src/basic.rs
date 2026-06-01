@@ -48,7 +48,7 @@ use std::cell::{Cell, RefCell};
 use std::collections::{VecDeque, LinkedList, BTreeMap, HashMap, HashSet};
 use std::fmt;
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 fn main() {
     section_01_primitives();
@@ -1447,6 +1447,8 @@ fn section_22_concurrency() {
     h.join().unwrap();
 
     // ── Arc<Mutex<T>>: shared mutable state across threads ────────────────────
+    // Option of RwLock for read heavy scenarios.
+    // let counter = Arc::new(RwLock::new(0i32));
     let counter = Arc::new(Mutex::new(0i32));
     let mut handles = vec![];
     for _ in 0..5 {
@@ -1529,7 +1531,7 @@ macro_rules! say_hello {
 
 // ── A vec!-like macro ─────────────────────────────────────────────────────────
 macro_rules! my_vec {
-    ($($x:expr),* $(,)?) => {{     // trailing comma optional
+    ($($x:expr),* $(,)?) => {{
         let mut v = Vec::new();
         $( v.push($x); )*
         v
@@ -1558,11 +1560,17 @@ fn section_24_macros() {
     say_hello!("Alice");
     say_hello!("Alice", "Bob", "Carol");
 
-    let v = my_vec![1, 2, 3, 4,];
+    let v = my_vec![1, 2, 3, 4];
     println!("[§24] my_vec: {:?}", v);
+
+    let v2: Vec<&str> = my_vec![];
+    println!("[§24] empty my_vec: {:?}", v2);
 
     let m = map!{ "a" => 1, "b" => 2 };
     println!("[§24] map: {:?}", m);
+
+    let m2: HashMap<&str, i32> = map!{};
+    println!("[§24] empty map: {:?}", m2);
 
     assert_approx_eq!(3.14159f64, std::f64::consts::PI, 0.001);
     println!("[§24] macros OK");
@@ -1823,8 +1831,7 @@ fn section_31_attributes() {
     // #[inline(always)]   — force inlining
     // #[inline(never)]    — prevent inlining
     // #[cold]             — hint: rarely called (branch prediction)
-    // todo: check out below attribute:
-    // #[no_mangle]        — disable name mangling (for FFI)
+    // #[no_mangle]        — disable name mangling (for FFI), allowing rust api from C etc....
 
     // ── Conditional compilation ───────────────────────────────────────────────
     // #[cfg(target_os = "linux")]
