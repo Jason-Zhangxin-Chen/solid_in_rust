@@ -383,7 +383,8 @@ fn box_methods() {
 // =============================================================================
 // Rc<T> and Rc::Weak<T>
 // =============================================================================
-// Rc: Reference-counted shared ownership — single-threaded only.
+// Rc: Reference-counted shared ownership of immutable data. — single-threaded only.
+//     For wrapping mutable data, wrap data via interior mutability primitives.
 // Weak: Non-owning reference — does NOT prevent deallocation.
 // Use Rc when multiple owners are needed but threads are not involved.
 // Use Weak to break reference cycles (parent ↔ child, observer pattern).
@@ -507,7 +508,8 @@ fn rc_methods() {
 // =============================================================================
 // Arc<T> and Arc::Weak<T>
 // =============================================================================
-// Arc: Atomically reference-counted shared ownership — thread-safe.
+// Arc: Atomically reference-counted shared ownership for immutable data — thread-safe.
+//    For sharing mutable data, wrap the data via interior mutability primitives.
 // Same API as Rc but uses atomic operations (slightly more expensive).
 // Combine with Mutex<T> or RwLock<T> for shared mutable state across threads.
 // =============================================================================
