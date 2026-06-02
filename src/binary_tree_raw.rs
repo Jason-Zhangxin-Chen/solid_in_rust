@@ -13,10 +13,14 @@ struct Node<T> {
 }
 
 impl<T> Node<T> {
-    fn new(elem: T) -> NonNull<Self> {
+
+    fn allocate(elem: T) -> NonNull<Self> {
         let boxed = Box::new(Node { elem, left: None, right: None });
-        // Safety: Box::into_raw is always non-null.
         unsafe { NonNull::new_unchecked(Box::into_raw(boxed)) }
+    }
+
+    fn deallocate(ptr: NonNull<Self>) -> Box<Self> {
+        unsafe { Box::from_raw(ptr.as_ptr()) }
     }
 }
 
@@ -36,7 +40,7 @@ unsafe fn free_subtree<T>(root: NonNull<Node<T>>) {
             continue;
         }
         stack.pop();
-        let _ = Box::from_raw(top.as_ptr());
+        let _ = Node::deallocate(top);
     }
 }
 
@@ -199,7 +203,7 @@ impl<T: Ord> BinaryTree<T> {
 
     fn insert_recursive(link: &mut Link<T>, elem: T) -> bool {
         match link {
-            None => { *link = Some(Node::new(elem)); true }
+            None => { *link = Some(Node::allocate(elem)); true }
             Some(ptr) => {
                 // Safety: ptr is valid.
                 let node = unsafe { &mut *ptr.as_ptr() };
@@ -224,7 +228,7 @@ impl<T: Ord> BinaryTree<T> {
                 std::cmp::Ordering::Equal   => return false,
             }
         }
-        *current = Some(Node::new(elem));
+        *current = Some(Node::allocate(elem));
         self.len += 1;
         true
     }
