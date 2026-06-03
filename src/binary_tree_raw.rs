@@ -330,7 +330,7 @@ impl<T: Ord + Clone> BinaryTree<T> {
             let node = unsafe { &*ptr.as_ptr() };
             result.push(node.elem.clone());
             if let Some(right) = node.right { stack.push(right); }
-            if let Some(left)  = node.left  { stack.push(left);  }
+            if let Some(left)  = node.left  { stack.push(left); }
         }
         result
     }
