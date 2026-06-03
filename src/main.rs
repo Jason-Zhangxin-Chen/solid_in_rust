@@ -37,6 +37,7 @@ mod pcm;
 mod tcp_service;
 mod phantom_data;
 mod error_bitmask;
+mod common_issues;
 
 use std::iter::IntoIterator;
 use std::sync::atomic::AtomicU64;
