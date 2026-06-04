@@ -315,10 +315,12 @@ fn barking2<T: Animal>(animal: &T) {
     println!("{}", animal.bark());
 }
 
-// Static dispatching, but with a moved value of T as the input.
+// Static dispatching, but with a moved value of T as the input. If T: Copy, the compiler copies
+// instead of moves. If T is not Copy, the caller moves the ownership of T into the fn, and the fn
+// can use it directly
 fn barking3<T: Animal>(animal: T) {
     println!("{}", animal.bark());
-}
+} // animal dropped here.
 
 /*
 // You write one generic function...
@@ -327,3 +329,24 @@ fn barking2<T: Animal>(animal: &T) { ... }
 fn barking2_dog(animal: &Dog) { ... }
 fn barking2_cat(animal: &Cat) { ... }
 */
+
+// Use slices instead of &Vec<T>. Slices accept vectors, arrays, and other sliceable types.
+// Do not do this although it works.
+fn sum(set: &Vec<i32>) -> i32 {
+    set.iter().sum()
+}
+
+// Better to do it in this way, taking a slice is much better.
+fn sum1(set: &[i32]) -> i32 {
+    set.iter().sum()
+}
+
+fn string_conversion() {
+    // Call the From<T> to convert &str to String, which is more efficient than to_string()
+    // for string literals.
+    let s: String = "hello world".into();
+    // Create owned data from borrowed data by clone.
+    let s: String = "hello world".to_owned();
+    // Create owned data from Display trait to_string(), a little bit heavy.
+    let s: String = "hello world".to_string();
+}
