@@ -87,6 +87,7 @@ pub fn process(data: &str) {
     println!("processing data: {}", data); // bad in a lib.
 }
 
+use std::cell::RefCell;
 use std::rc::Rc;
 use std::sync::Arc;
 // instead, use log::info; crate.
@@ -178,3 +179,151 @@ struct MsgQueueConfig {
 fn process_string(input: &str) {
     println!("Processing: {}", input);
 }
+
+// Overusing Rc<RefCell<T>>, Using interior mutability and reference counting when simpler ownership
+// or borrowing works, leading to runtime panic risk on already borrowed.
+fn overusing_rc_refcell() {
+    let shared = Rc::new(RefCell::new(1));
+    // ... sharing everywhere...
+    // Restructure to avoid shared mutation, e.g., store mutable data in a single owner and pass
+    // &mut where needed.
+}
+
+// Using as for numeric conversions, "as" silently truncates or discard data on overflow/underflow,
+// which can lead to bugs. Use TryFrom/TryInto for fallible conversions.
+fn numeric_conversion() {
+    /*
+        let x: u32 = 500;
+        let y: u8 = x as u8; //y = 244 (truncated)
+    */
+    let x: u32 = 500;
+    let y = u8::try_from(x).expect("value too large");
+}
+
+// Using &mut self when &self is enough. Unnecessary restricting callers and preventing concurrent
+// reads.
+
+// Bad: fn length(&mut self) -> usize { self.data.len() }
+// Good: fn length(&self) -> usize { self.data.len() }
+
+// Definning Default manually when the default value is not meaningful. It can lead to confusion
+// and bugs if the default value is not meaningful or valid for the type. If the default value does
+// not make sense, it's better to not implement Default at all, and require callers to explicitly
+// provide the necessary values when creating an instance of the type. Or just derive the Default.
+// This can help prevent misuse and ensure that the type is always initialized with valid data.
+
+// Do not match for single bool, option or result, use if let instead.
+fn do_not_match_for_singles() {
+    let op = Some(42);
+    if let Some(v) = op {
+        println!("{}", v);
+    }
+
+    let op: Option<i32> = None;
+    if let None = op {
+        return;
+    }
+
+    let result: Result<i32, &str> = Ok(32);
+    if let Ok(v) = result {
+        println!("{}", v);
+    }
+
+    if let Err(e) = result {
+        println!("{}", e);
+        return
+    }
+
+    let result: Result<i32, &str> = Err("value too large");
+    if let Err(e) = result {
+        println!("{}", e);
+        return
+    }
+
+    if let Ok(v) = result {
+        println!("{}", v);
+    }
+}
+
+// do not collect intermediate vectors unnecessarily, it waits allocations when you could chain iterators.
+fn collect_vectors() {
+    let data = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
+    // do not collect with intermediate vectors.
+    let filtered: Vec<_> = data.iter().filter(|&&i| i>5 ).collect();
+    let mapped: Vec<_> = filtered.iter().map(|&i| i*2).collect();
+
+    // do it like this:
+    let result: Vec<_> = data.iter().filter(|&&i| i>5).map(|&i| i*2).collect();
+}
+
+// do not use panic! if the error is recoverable.
+fn divide(a: f64, b: f64) -> Result<f64, &'static str> {
+    if b == 0.0 { panic!("division by zero");}
+    Ok(a / b)
+}
+
+// better one:
+fn divide1(a: f64, b: f64) -> Option<f64> {
+    if b == 0.0 {return None; } // exact zero: explicit guard
+
+    let result = a / b;
+    if result.is_finite() { // catch +- Inf from near-zero b.
+        Some(result)
+    } else {
+        None
+    }
+}
+
+// Dynamic dispatching vs. static dispatching
+trait Animal {
+    fn bark(&self) -> &'static str;
+}
+
+struct Cat {}
+impl Animal for Cat {
+    fn bark(&self) -> &'static str {
+        "miao miao"
+    }
+}
+
+struct Duck {}
+impl Animal for Duck {
+    fn bark(&self) -> &'static str {
+        "gar gar"
+    }
+}
+
+// dynamic, the fn takes a refence of the trait object, so the caller does not move it into
+// the fn, a refence is a kind of fat pointer, thus it is sized with
+// (2 words: data pointer + vtable pointer) on the stack as the Animal is an unknown type at
+// compile phase, thus it need an extra vtable pointer.
+fn barking0(animal: &dyn Animal) {
+    println!("{}", animal.bark());
+}
+
+// dynamic, the fn takes a Box<T> smart pointer which wraps the trait object, so the caller moves
+// the Box into the fn, and the Box is a 2word pointer on the stack as well since the type is not
+// resolved at compile time two, so it requires an extra vtable pointer.
+fn barking1(animal: Box<dyn Animal>) {
+    println!("{}", animal.bark());
+}
+
+// Static dispatching is better, as it's resolved in compile phase. The caller don't want to move
+// the ownership of T, instead it just want to pass a reference of T without a vtable pointer as
+// T's type is known at compile phase.
+fn barking2<T: Animal>(animal: &T) {
+    println!("{}", animal.bark());
+}
+
+// Static dispatching, but with a moved value of T as the input.
+fn barking3<T: Animal>(animal: T) {
+    println!("{}", animal.bark());
+}
+
+/*
+// You write one generic function...
+fn barking2<T: Animal>(animal: &T) { ... }
+// ...compiler silently generates:
+fn barking2_dog(animal: &Dog) { ... }
+fn barking2_cat(animal: &Cat) { ... }
+*/
