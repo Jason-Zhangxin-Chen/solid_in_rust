@@ -45,7 +45,7 @@
 
 use std::borrow::Cow;
 use std::cell::{Cell, RefCell};
-use std::collections::{VecDeque, LinkedList, BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet, LinkedList, VecDeque};
 use std::fmt;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex, RwLock};
@@ -93,57 +93,57 @@ fn main() {
 // =============================================================================
 fn section_01_primitives() {
     // ── Integer types ────────────────────────────────────────────────────────
-    let a: i8   = -128;          // signed   8-bit
-    let b: i16  = 32_000;        // signed  16-bit  (underscores for readability)
-    let c: i32  = -2_147_483_648;// signed  32-bit  (default integer)
-    let d: i64  = 9_000_000_000_000;
+    let a: i8 = -128; // signed   8-bit
+    let b: i16 = 32_000; // signed  16-bit  (underscores for readability)
+    let c: i32 = -2_147_483_648; // signed  32-bit  (default integer)
+    let d: i64 = 9_000_000_000_000;
     let e: i128 = 1;
-    let f: isize = -1;           // pointer-sized signed (usize on this platform)
+    let f: isize = -1; // pointer-sized signed (usize on this platform)
 
-    let u: u8   = 255;
-    let v: u32  = 4_294_967_295;
-    let w: usize = 42;           // used for indexing / lengths
+    let u: u8 = 255;
+    let v: u32 = 4_294_967_295;
+    let w: usize = 42; // used for indexing / lengths
 
     // Integer literals: hex, octal, binary
-    let hex  = 0xFF_u8;          // 255
-    let oct  = 0o17_u8;          // 15
-    let bin  = 0b1111_0000_u8;   // 240
-    let byte = b'A';             // u8 = 65
+    let hex = 0xFF_u8; // 255
+    let oct = 0o17_u8; // 15
+    let bin = 0b1111_0000_u8; // 240
+    let byte = b'A'; // u8 = 65
 
     // ── Float types ──────────────────────────────────────────────────────────
     let fl32: f32 = 3.14;
-    let fl64: f64 = std::f64::consts::PI;  // default float
+    let fl64: f64 = std::f64::consts::PI; // default float
 
     // ── Bool & char ──────────────────────────────────────────────────────────
     let flag: bool = true;
-    let ch: char = '🦀';        // char is a 4-byte Unicode scalar
+    let ch: char = '🦀'; // char is a 4-byte Unicode scalar
 
     // ── Tuples ───────────────────────────────────────────────────────────────
     let tup: (i32, f64, bool) = (42, 3.14, true);
-    let (x, y, z) = tup;        // destructure
-    let first = tup.0;          // index access
+    let (x, y, z) = tup; // destructure
+    let first = tup.0; // index access
 
     // ── Arrays (fixed-size, stack-allocated) ─────────────────────────────────
     let arr: [i32; 5] = [1, 2, 3, 4, 5];
-    let zeros    = [0i32; 100];    // 100 zeros
-    let third = arr[2];         // 3
-    let len   = arr.len();      // 5
+    let zeros = [0i32; 100]; // 100 zeros
+    let third = arr[2]; // 3
+    let len = arr.len(); // 5
 
     // ── Variables & mutability ───────────────────────────────────────────────
-    let immutable = 10;          // immutable by default
+    let immutable = 10; // immutable by default
     let mut mutable = 10;
     mutable += 1;
 
     // Shadowing — re-declare with same name (can change type)
     let shadow = "hello";
-    let shadow = shadow.len();   // now shadow: usize = 5
+    let shadow = shadow.len(); // now shadow: usize = 5
 
     // Constants — must have explicit type, evaluated at compile time
     const MAX_POINTS: u32 = 100_000;
-    static GREETING: &str = "hello";  // static lives for entire program
+    static GREETING: &str = "hello"; // static lives for entire program
 
     // ── Unit type ────────────────────────────────────────────────────────────
-    let unit: () = ();           // functions that return nothing implicitly return ()
+    let unit: () = (); // functions that return nothing implicitly return ()
 
     println!("[§1] primitives OK — π ≈ {:.4}", fl64);
 }
@@ -154,28 +154,28 @@ fn section_01_primitives() {
 fn section_02_ownership() {
     // ── Rule 1: each value has exactly ONE owner ──────────────────────────────
     let s1 = String::from("hello");
-    let s2 = s1;          // s1 is MOVED into s2; s1 is no longer valid
-    // println!("{}", s1);       // ← would not compile: value used after move
+    let s2 = s1; // s1 is MOVED into s2; s1 is no longer valid
+                 // println!("{}", s1);       // ← would not compile: value used after move
 
     // ── Clone: explicit deep copy ─────────────────────────────────────────────
     let s3 = String::from("world");
-    let s4 = s3.clone();         // deep copy; both s3 and s4 are valid
+    let s4 = s3.clone(); // deep copy; both s3 and s4 are valid
     println!("[§2] clone: {} and {}", s3, s4);
 
     // ── Copy types: stack-only types implement Copy, so they are NOT moved ────
     let n1: i32 = 5;
-    let n2 = n1;                 // n1 still valid — i32 is Copy
+    let n2 = n1; // n1 still valid — i32 is Copy
     println!("[§2] copy:  {} and {}", n1, n2);
 
     // Copy types: i8..i128, u8..u128, f32, f64, bool, char, (), &T, [T;N] if T:Copy
 
     // ── Ownership and functions ───────────────────────────────────────────────
     let s = String::from("drop me");
-    takes_ownership(s);          // s moved into function; dropped when fn returns
-    // println!("{}", s);        // ← would not compile
+    takes_ownership(s); // s moved into function; dropped when fn returns
+                        // println!("{}", s);        // ← would not compile
 
     let n = 42;
-    makes_copy(n);               // n copied; still valid here
+    makes_copy(n); // n copied; still valid here
     println!("[§2] n after makes_copy: {}", n);
 
     // ── Return values transfer ownership back ────────────────────────────────
@@ -183,9 +183,12 @@ fn section_02_ownership() {
     println!("[§2] got back: {}", s_out);
 }
 
-fn takes_ownership(s: String) { /* s is dropped here */ }
+fn takes_ownership(s: String) { /* s is dropped here */
+}
 fn makes_copy(n: i32) {}
-fn gives_ownership() -> String { String::from("owned") }
+fn gives_ownership() -> String {
+    String::from("owned")
+}
 
 // =============================================================================
 // §3  BORROWING & REFERENCES
@@ -194,8 +197,8 @@ fn section_03_borrowing() {
     let s = String::from("hello");
 
     // ── Shared (immutable) reference: &T ─────────────────────────────────────
-    let len = calculate_len(&s);  // pass a reference — s is NOT moved
-    println!("[§3] '{}' has length {}", s, len);  // s still valid
+    let len = calculate_len(&s); // pass a reference — s is NOT moved
+    println!("[§3] '{}' has length {}", s, len); // s still valid
 
     // RULE: many shared references are OK simultaneously
     let r1 = &s;
@@ -204,7 +207,7 @@ fn section_03_borrowing() {
 
     // ── Mutable reference: &mut T ────────────────────────────────────────────
     let mut m = String::from("hello");
-    change(&mut m);               // lend mutably
+    change(&mut m); // lend mutably
     println!("[§3] after change: {}", m);
 
     // RULE: at most ONE mutable reference in scope at a time
@@ -215,16 +218,20 @@ fn section_03_borrowing() {
     // RULE: cannot have &mut and & at the same time
     // (NLL — Non-Lexical Lifetimes — means scopes are precise)
     let mut v = vec![1, 2, 3];
-    let first = &v[0];           // shared borrow
+    let first = &v[0]; // shared borrow
     println!("[§3] first = {}", first);
     // first reference ends here (last use), so we can mutate:
-    v.push(4);                   // OK — first's lifetime already ended
+    v.push(4); // OK — first's lifetime already ended
 
     println!("[§3] borrowing OK");
 }
 
-fn calculate_len(s: &String) -> usize { s.len() }
-fn change(s: &mut String) { s.push_str(", world"); }
+fn calculate_len(s: &String) -> usize {
+    s.len()
+}
+fn change(s: &mut String) {
+    s.push_str(", world");
+}
 
 // =============================================================================
 // §4  LIFETIMES
@@ -235,17 +242,23 @@ fn change(s: &mut String) { s.push_str(", world"); }
 // ── Explicit lifetime annotation ─────────────────────────────────────────────
 // 'a means: the returned reference lives at least as long as BOTH inputs
 fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
-    if x.len() > y.len() { x } else { y }
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
 }
 
 // ── Lifetime in structs ───────────────────────────────────────────────────────
 struct Important<'a> {
-    excerpt: &'a str,   // this struct cannot outlive the &str it holds
+    excerpt: &'a str, // this struct cannot outlive the &str it holds
 }
 
 impl<'a> Important<'a> {
     // Lifetime elision: compiler infers 'a here
-    fn level(&self) -> &str { self.excerpt }
+    fn level(&self) -> &str {
+        self.excerpt
+    }
 }
 
 // ── 'static lifetime: lives for the entire program ───────────────────────────
@@ -260,11 +273,13 @@ fn section_04_lifetimes() {
         let s2 = String::from("xy");
         result = longest(s1.as_str(), s2.as_str());
         println!("[§4] longest: '{}'", result);
-    }  // s2 dropped here — but result is not used after this, so OK
+    } // s2 dropped here — but result is not used after this, so OK
 
     let novel = String::from("Call me Ishmael. Some years ago...");
     let first_sentence = novel.split('.').next().unwrap();
-    let imp = Important { excerpt: first_sentence };
+    let imp = Important {
+        excerpt: first_sentence,
+    };
     println!("[§4] excerpt: '{}'", imp.level());
 
     println!("[§4] lifetimes OK");
@@ -278,9 +293,9 @@ fn section_05_slices() {
 
     // ── String slices &str ────────────────────────────────────────────────────
     let s = String::from("hello world");
-    let hello = &s[0..5];   // bytes 0–4
+    let hello = &s[0..5]; // bytes 0–4
     let world = &s[6..11];
-    let all = &s[..];     // entire string as slice
+    let all = &s[..]; // entire string as slice
 
     // ── Array slices &[T] ─────────────────────────────────────────────────────
     let arr = [1, 2, 3, 4, 5];
@@ -292,7 +307,9 @@ fn section_05_slices() {
     m_slice[0] = 1;
 
     // ── Slice in function signature ───────────────────────────────────────────
-    fn sum(nums: &[i32]) -> i32 { nums.iter().sum() }
+    fn sum(nums: &[i32]) -> i32 {
+        nums.iter().sum()
+    }
     println!("[§5] sum of arr: {}", sum(&arr));
     println!("[§5] sum of mid: {}", sum(mid));
 
@@ -300,7 +317,9 @@ fn section_05_slices() {
     fn first_word(s: &str) -> &str {
         let bytes = s.as_bytes();
         for (i, &b) in bytes.iter().enumerate() {
-            if b == b' ' { return &s[0..i]; }
+            if b == b' ' {
+                return &s[0..i];
+            }
         }
         &s[..]
     }
@@ -314,45 +333,49 @@ fn section_06_strings() {
     // &str  — immutable reference to UTF-8 bytes, stack-stored (or binary/heap)
     // String — owned, heap-allocated, growable UTF-8 string
 
-    let literal:  &str   = "I am a string literal — &str";
-    let owned:    String = String::from("I am a heap String");
-    let also:     String = "also heap".to_string(); // come from the Display trait.
-    let also2:    String = "also heap".to_owned(); // come from the ToOwned trait of a borrowed value.
+    let literal: &str = "I am a string literal — &str";
+    let owned: String = String::from("I am a heap String");
+    let also: String = "also heap".to_string(); // come from the Display trait.
+    let also2: String = "also heap".to_owned(); // come from the ToOwned trait of a borrowed value.
 
     // ── Conversion ────────────────────────────────────────────────────────────
-    let slice: &str = &owned;                  // String → &str (deref coercion)
-    let owned2 = slice.to_string();     // &str  → String
+    let slice: &str = &owned; // String → &str (deref coercion)
+    let owned2 = slice.to_string(); // &str  → String
 
     // ── Building strings ──────────────────────────────────────────────────────
     let mut s = String::new();
-    s.push_str("hello");             // append &str
-    s.push(' ');                       // append char
+    s.push_str("hello"); // append &str
+    s.push(' '); // append char
     s.push_str("world");
     s.push_str(slice);
 
-    let s2 = format!("{} — {}", s, literal);  // format! never moves
+    let s2 = format!("{} — {}", s, literal); // format! never moves
     println!("[§6] {}", s2);
 
     // ── Concatenation with + ──────────────────────────────────────────────────
     let s1 = String::from("Hello, ");
     let s2 = String::from("world!");
-    let s3 = s1 + &s2;    // s1 moved here; s2 borrowed (fn signature: add(self, &str))
-    // s1 no longer valid; s2 still valid
+    let s3 = s1 + &s2; // s1 moved here; s2 borrowed (fn signature: add(self, &str))
+                       // s1 no longer valid; s2 still valid
 
     // ── Iteration ─────────────────────────────────────────────────────────────
     let word = "café";
-    for c in word.chars()  { /* each Unicode scalar */ }
-    for b in word.bytes()  { /* each raw byte       */ }
-    for d in word.as_bytes() {/*each &u8, reference to byte*/}
-    println!("[§6] '{}' has {} chars, {} bytes", word, word.chars().count(), word.len());
-
+    for c in word.chars() { /* each Unicode scalar */ }
+    for b in word.bytes() { /* each raw byte       */ }
+    for d in word.as_bytes() { /*each &u8, reference to byte*/ }
+    println!(
+        "[§6] '{}' has {} chars, {} bytes",
+        word,
+        word.chars().count(),
+        word.len()
+    );
 
     // ── Useful methods ────────────────────────────────────────────────────────
     let s = "  Hello, Rust!  ";
     println!("[§6] trim:       '{}'", s.trim());
     println!("[§6] to_upper:   '{}'", s.trim().to_uppercase());
-    println!("[§6] contains:   {}",   s.contains("Rust"));
-    println!("[§6] replace:    {}",   s.trim().replace("Rust", "World"));
+    println!("[§6] contains:   {}", s.contains("Rust"));
+    println!("[§6] replace:    {}", s.trim().replace("Rust", "World"));
     let parts: Vec<&str> = "a,b,c".split(',').collect();
     println!("[§6] split:      {:?}", parts);
 }
@@ -365,9 +388,9 @@ fn section_06_strings() {
 #[derive(Debug, Clone)]
 struct User {
     username: String,
-    email:    String,
+    email: String,
     sign_in_count: u64,
-    active:   bool,
+    active: bool,
 }
 
 impl User {
@@ -375,7 +398,7 @@ impl User {
     fn new(username: &str, email: &str) -> Self {
         User {
             username: username.to_string(),
-            email:    email.to_string(),
+            email: email.to_string(),
             sign_in_count: 0,
             active: true,
         }
@@ -402,20 +425,23 @@ impl Point {
 
 #[derive(Debug)]
 struct GenericPoint<T>
-where T: Default + Add<Output=T> + Mul<Output=T> + Copy
+where
+    T: Default + Add<Output = T> + Mul<Output = T> + Copy,
 {
     x: T,
     y: T,
 }
 
 impl<T> GenericPoint<T>
-where T: Default + Add<Output = T> + Mul<Output = T> + Copy {
+where
+    T: Default + Add<Output = T> + Mul<Output = T> + Copy,
+{
     fn new(x: T, y: T) -> Self {
         GenericPoint { x, y }
     }
 
     fn distance_from_origin(&self) -> T {
-        (self.x * self.x + self.y*self.y)
+        (self.x * self.x + self.y * self.y)
     }
 }
 
@@ -434,12 +460,12 @@ fn section_07_structs() {
     let u2 = User {
         email: String::from("bob@example.com"),
         username: String::from("bob"),
-        ..u1.clone()           // remaining fields copied from u1
+        ..u1.clone() // remaining fields copied from u1
     };
     println!("[§7] u2: {:?}", u2);
 
     let p = Point(3.0, 4.0);
-    println!("[§7] distance: {}", p.distance_from_origin());  // 5.0
+    println!("[§7] distance: {}", p.distance_from_origin()); // 5.0
 
     let ae = AlwaysEqual;
     println!("[§7] ae: {:?}", ae);
@@ -459,8 +485,11 @@ enum Shape {
 impl Shape {
     fn area(&self) -> f64 {
         match self {
-            Shape::Circle(r)                        => std::f64::consts::PI * r * r,
-            Shape::Rectangle { width: w, height: h } => w * h,
+            Shape::Circle(r) => std::f64::consts::PI * r * r,
+            Shape::Rectangle {
+                width: w,
+                height: h,
+            } => w * h,
             Shape::Triangle(a, b, c) => {
                 let s = (a + b + c) / 2.0;
                 (s * (s - a) * (s - b) * (s - c)).sqrt()
@@ -470,13 +499,18 @@ impl Shape {
 }
 
 #[derive(Debug)]
-enum Coin { Penny, Nickel, Dime, Quarter(String) }
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(String),
+}
 
 fn value_in_cents(coin: &Coin) -> u32 {
     match coin {
-        Coin::Penny              => 1,
-        Coin::Nickel             => 5,
-        Coin::Dime               => 10,
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
         Coin::Quarter(state) => {
             println!("[§8] State quarter: {}", state);
             25
@@ -487,7 +521,10 @@ fn value_in_cents(coin: &Coin) -> u32 {
 fn section_08_enums_and_matching() {
     let shapes = vec![
         Shape::Circle(5.0),
-        Shape::Rectangle { width: 4.0, height: 6.0 },
+        Shape::Rectangle {
+            width: 4.0,
+            height: 6.0,
+        },
         Shape::Triangle(3.0, 4.0, 5.0),
     ];
     for s in &shapes {
@@ -513,27 +550,27 @@ fn section_08_enums_and_matching() {
     // ── Destructuring in match ────────────────────────────────────────────────
     let pair = (0, -2);
     let desc = match pair {
-        (0, y)  => format!("on y-axis at {}", y),
-        (x, 0)  => format!("on x-axis at {}", x),
+        (0, y) => format!("on y-axis at {}", y),
+        (x, 0) => format!("on x-axis at {}", x),
         (x, y) if x == y => format!("on diagonal at {}", x),
-        (x, y)  => format!("at ({}, {})", x, y),
+        (x, y) => format!("at ({}, {})", x, y),
     };
     println!("[§8] {}", desc);
 
     // ── Range patterns ────────────────────────────────────────────────────────
     let n = 42u32;
     let grade = match n {
-        0..=49  => "fail",
+        0..=49 => "fail",
         50..=69 => "pass",
         70..=89 => "merit",
-        _       => "distinction",
+        _ => "distinction",
     };
     println!("[§8] grade: {}", grade);
 
     // ── @ bindings ────────────────────────────────────────────────────────────
     let msg = match n {
         low @ 1..=49 => format!("failing by {}", 50 - low),
-        _            => String::from("passing"),
+        _ => String::from("passing"),
     };
     println!("[§8] {}", msg);
 
@@ -549,23 +586,30 @@ fn section_09_option() {
     // Option<T> = Some(T) | None — Rust's null safety
 
     fn divide(a: f64, b: f64) -> Option<f64> {
-        if b == 0.0 { None } else { Some(a / b) }
+        if b == 0.0 {
+            None
+        } else {
+            Some(a / b)
+        }
     }
 
     // ── Unwrapping ────────────────────────────────────────────────────────────
     let result = divide(10.0, 2.0);
     println!("[§9] divide:      {:?}", result);
-    println!("[§9] unwrap:      {}", result.unwrap());              // panics if None
+    println!("[§9] unwrap:      {}", result.unwrap()); // panics if None
     println!("[§9] unwrap_or:   {}", divide(10.0, 0.0).unwrap_or(0.0));
-    println!("[§9] unwrap_or_else: {}", divide(10.0, 0.0).unwrap_or_else(|| f64::INFINITY));
+    println!(
+        "[§9] unwrap_or_else: {}",
+        divide(10.0, 0.0).unwrap_or_else(|| f64::INFINITY)
+    );
 
     // ── map / and_then (Option as functor/monad) ──────────────────────────────
     let doubled = divide(10.0, 2.0).map(|v| v * 2.0);
     println!("[§9] map:         {:?}", doubled);
 
     let chained = divide(10.0, 2.0)
-        .and_then(|v| divide(v, 2.0))  // Some(2.5)
-        .map(|v| v.floor());           // Some(2.0)
+        .and_then(|v| divide(v, 2.0)) // Some(2.5)
+        .map(|v| v.floor()); // Some(2.0)
     println!("[§9] and_then:    {:?}", chained);
 
     // ── or / or_else ──────────────────────────────────────────────────────────
@@ -581,11 +625,21 @@ fn section_09_option() {
 
     // ── ? in functions returning Option ──────────────────────────────────────
     fn sqrt_of_quotient(a: f64, b: f64) -> Option<f64> {
-        let q = divide(a, b)?;   // returns None immediately if divide returns None
-        if q < 0.0 { None } else { Some(q.sqrt()) }
+        let q = divide(a, b)?; // returns None immediately if divide returns None
+        if q < 0.0 {
+            None
+        } else {
+            Some(q.sqrt())
+        }
     }
-    println!("[§9] sqrt_of_quotient(16,4) = {:?}", sqrt_of_quotient(16.0, 4.0));
-    println!("[§9] sqrt_of_quotient(1,0)  = {:?}", sqrt_of_quotient(1.0, 0.0));
+    println!(
+        "[§9] sqrt_of_quotient(16,4) = {:?}",
+        sqrt_of_quotient(16.0, 4.0)
+    );
+    println!(
+        "[§9] sqrt_of_quotient(1,0)  = {:?}",
+        sqrt_of_quotient(1.0, 0.0)
+    );
 }
 
 // =============================================================================
@@ -605,9 +659,9 @@ enum AppError {
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            AppError::Parse(e)   => write!(f, "parse error: {}", e),
+            AppError::Parse(e) => write!(f, "parse error: {}", e),
             AppError::NegativeNumber(n) => write!(f, "negative number: {}", n),
-            AppError::Custom(msg)     => write!(f, "{}", msg),
+            AppError::Custom(msg) => write!(f, "{}", msg),
         }
     }
 }
@@ -624,13 +678,18 @@ impl std::error::Error for AppError {
 
 // From<E> allows automatic conversion with ?
 impl From<ParseIntError> for AppError {
-    fn from(e: ParseIntError) -> Self { AppError::Parse(e) }
+    fn from(e: ParseIntError) -> Self {
+        AppError::Parse(e)
+    }
 }
 
 fn parse_positive(s: &str) -> Result<u64> {
-    let n: i64 = s.trim().parse().map_err(AppError::Parse)?;  // explicit map_err
-    if n < 0 { Err(AppError::NegativeNumber(n)) }
-    else      { Ok(n as u64) }
+    let n: i64 = s.trim().parse().map_err(AppError::Parse)?; // explicit map_err
+    if n < 0 {
+        Err(AppError::NegativeNumber(n))
+    } else {
+        Ok(n as u64)
+    }
 }
 
 fn section_10_result() {
@@ -674,18 +733,20 @@ use std::io;
 fn read_number_from_string(s: &str) -> Result<u64> {
     // Each ? either propagates the error or unwraps the Ok value
     let trimmed = s.trim();
-    let n: i64 = trimmed.parse()?;   // ParseIntError → AppError via From impl
-    if n < 0 { return Err(AppError::NegativeNumber(n)); }
+    let n: i64 = trimmed.parse()?; // ParseIntError → AppError via From impl
+    if n < 0 {
+        return Err(AppError::NegativeNumber(n));
+    }
     Ok(n as u64)
 }
 
 fn section_11_question_mark() {
     match read_number_from_string("  99  ") {
-        Ok(n)  => println!("[§11] parsed: {}", n),
+        Ok(n) => println!("[§11] parsed: {}", n),
         Err(e) => println!("[§11] error: {}", e),
     }
     match read_number_from_string("oops") {
-        Ok(n)  => println!("[§11] parsed: {}", n),
+        Ok(n) => println!("[§11] parsed: {}", n),
         Err(e) => println!("[§11] error: {}", e),
     }
 }
@@ -706,33 +767,56 @@ fn section_11_question_mark() {
 trait Drawable {
     fn draw(&self);
     // Default method — can be overridden, this is different when comparing with golang.
-    fn bounding_box(&self) -> (f64, f64) { (0.0, 0.0) }
+    fn bounding_box(&self) -> (f64, f64) {
+        (0.0, 0.0)
+    }
 }
 
 // ── Implement a trait ─────────────────────────────────────────────────────────
-struct Circle { x: f64, y: f64, radius: f64 }
-struct Rect   { x: f64, y: f64, w: f64, h: f64 }
+struct Circle {
+    x: f64,
+    y: f64,
+    radius: f64,
+}
+struct Rect {
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+}
 
 impl Drawable for Circle {
     fn draw(&self) {
-        println!("[§12] Circle at ({:.0},{:.0}) r={:.0}", self.x, self.y, self.radius);
+        println!(
+            "[§12] Circle at ({:.0},{:.0}) r={:.0}",
+            self.x, self.y, self.radius
+        );
     }
-    fn bounding_box(&self) -> (f64, f64) { (self.radius * 2.0, self.radius * 2.0) }
+    fn bounding_box(&self) -> (f64, f64) {
+        (self.radius * 2.0, self.radius * 2.0)
+    }
 }
 
 impl Drawable for Rect {
     fn draw(&self) {
-        println!("[§12] Rect at ({:.0},{:.0}) {}×{}", self.x, self.y, self.w, self.h);
+        println!(
+            "[§12] Rect at ({:.0},{:.0}) {}×{}",
+            self.x, self.y, self.w, self.h
+        );
     }
-    fn bounding_box(&self) -> (f64, f64) { (self.w, self.h) }
+    fn bounding_box(&self) -> (f64, f64) {
+        (self.w, self.h)
+    }
 }
 
 // ── Trait bounds on functions ─────────────────────────────────────────────────
-fn print_shape(shape: &impl Drawable) {            // impl Trait syntax
+fn print_shape(shape: &impl Drawable) {
+    // impl Trait syntax
     shape.draw();
 }
 
-fn print_shape_generic<T: Drawable>(shape: &T) {   // generic with bound
+fn print_shape_generic<T: Drawable>(shape: &T) {
+    // generic with bound
     shape.draw();
     let (w, h) = shape.bounding_box();
     println!("[§12] bbox: {}×{}", w, h);
@@ -740,7 +824,8 @@ fn print_shape_generic<T: Drawable>(shape: &T) {   // generic with bound
 
 // Where clause — cleaner for complex bounds
 fn print_both<T>(a: &T, b: &T)
-where T: Drawable + fmt::Debug
+where
+    T: Drawable + fmt::Debug,
 {
     a.draw();
     b.draw();
@@ -749,18 +834,32 @@ where T: Drawable + fmt::Debug
 // Golang has similar thing, but it puts interfaces inside the body of trait.
 // The way that rust do is C++ alike here.
 // ── Trait inheritance ─────────────────────────────────────────────────────────
-trait Resizable: Drawable {         // must also impl Drawable
+trait Resizable: Drawable {
+    // must also impl Drawable
     fn resize(&mut self, factor: f64);
 }
 
 // ── Returning impl Trait ──────────────────────────────────────────────────────
 fn make_circle() -> impl Drawable {
-    Circle { x: 0.0, y: 0.0, radius: 5.0 }
+    Circle {
+        x: 0.0,
+        y: 0.0,
+        radius: 5.0,
+    }
 }
 
 fn section_12_traits() {
-    let c = Circle { x: 1.0, y: 2.0, radius: 3.0 };
-    let r = Rect   { x: 0.0, y: 0.0, w: 10.0, h: 5.0 };
+    let c = Circle {
+        x: 1.0,
+        y: 2.0,
+        radius: 3.0,
+    };
+    let r = Rect {
+        x: 0.0,
+        y: 0.0,
+        w: 10.0,
+        h: 5.0,
+    };
     print_shape(&c);
     print_shape_generic(&r);
     make_circle().draw();
@@ -780,15 +879,20 @@ struct Point2D {
 // Custom Default implementation
 #[derive(Debug, Clone)]
 struct Config {
-    width:   u32,
-    height:  u32,
-    title:   String,
+    width: u32,
+    height: u32,
+    title: String,
     visible: bool,
 }
 
 impl Default for Config {
     fn default() -> Self {
-        Config { width: 800, height: 600, title: String::from("App"), visible: true }
+        Config {
+            width: 800,
+            height: 600,
+            title: String::from("App"),
+            visible: true,
+        }
     }
 }
 
@@ -805,20 +909,27 @@ fn section_13_derive_and_default() {
     println!("[§13] eq:      {}", p == p2);
 
     // PartialOrd / Ord — lexicographic on fields
-    let mut points = vec![Point2D{x:3,y:4}, Point2D{x:1,y:9}, Point2D{x:1,y:2}];
+    let mut points = vec![
+        Point2D { x: 3, y: 4 },
+        Point2D { x: 1, y: 9 },
+        Point2D { x: 1, y: 2 },
+    ];
     points.sort();
     println!("[§13] sorted:  {:?}", points);
 
     // Hash — enables use as HashMap key
     let mut map: HashMap<Point2D, &str> = HashMap::new();
-    map.insert(Point2D{x:0,y:0}, "origin");
+    map.insert(Point2D { x: 0, y: 0 }, "origin");
 
     // Default
     let cfg = Config::default();
     println!("[§13] default: {:?}", cfg);
 
     // Struct update from default (common pattern)
-    let custom = Config { title: String::from("Custom"), ..Config::default() };
+    let custom = Config {
+        title: String::from("Custom"),
+        ..Config::default()
+    };
     println!("[§13] custom:  {:?}", custom);
 }
 
@@ -829,34 +940,62 @@ fn section_13_derive_and_default() {
 // ── Generic struct ────────────────────────────────────────────────────────────
 #[derive(Debug)]
 struct Stack<T>
-where T: Debug
+where
+    T: Debug,
 {
     items: Vec<T>,
 }
 
 impl<T> Stack<T>
-where T: Debug
+where
+    T: Debug,
 {
-    fn new() -> Self { Stack { items: Vec::new() } }
-    fn push(&mut self, item: T) { self.items.push(item); }
-    fn pop(&mut self)  -> Option<T> { self.items.pop() }
-    fn peek(&self) -> Option<&T> { self.items.last() }
-    fn is_empty(&self) -> bool { self.items.is_empty() }
-    fn len(&self) -> usize { self.items.len() }
+    fn new() -> Self {
+        Stack { items: Vec::new() }
+    }
+    fn push(&mut self, item: T) {
+        self.items.push(item);
+    }
+    fn pop(&mut self) -> Option<T> {
+        self.items.pop()
+    }
+    fn peek(&self) -> Option<&T> {
+        self.items.last()
+    }
+    fn is_empty(&self) -> bool {
+        self.items.is_empty()
+    }
+    fn len(&self) -> usize {
+        self.items.len()
+    }
 }
 
 // ── Generic function with multiple bounds ─────────────────────────────────────
 fn largest<T: PartialOrd>(list: &[T]) -> &T {
     let mut largest = &list[0];
-    for item in list { if item > largest { largest = item; } }
+    for item in list {
+        if item > largest {
+            largest = item;
+        }
+    }
     largest
 }
 
-fn larger<'a, T: PartialOrd> (a: &'a T, b: &'a T) -> &'a T { if a > b { a } else { b } }
+fn larger<'a, T: PartialOrd>(a: &'a T, b: &'a T) -> &'a T {
+    if a > b {
+        a
+    } else {
+        b
+    }
+}
 
-fn littlest<T: PartialOrd>(list: &[T]) -> & T {
+fn littlest<T: PartialOrd>(list: &[T]) -> &T {
     let mut littlest = &list[0];
-    for item in list {if item < littlest { littlest = item; } }
+    for item in list {
+        if item < littlest {
+            littlest = item;
+        }
+    }
     littlest
 }
 
@@ -875,13 +1014,15 @@ struct Matrix<T, const N: usize, const M: usize> {
 
 fn section_14_generics() {
     let mut stack: Stack<i32> = Stack::new();
-    stack.push(1); stack.push(2); stack.push(3);
+    stack.push(1);
+    stack.push(2);
+    stack.push(3);
     println!("[§14] peek: {:?}", stack.peek());
     println!("[§14] pop:  {:?}", stack.pop());
     println!("[§14] len:  {}", stack.len());
 
-    let nums   = vec![34, 50, 25, 100, 65];
-    let chars  = vec!['y', 'm', 'a', 'q'];
+    let nums = vec![34, 50, 25, 100, 65];
+    let chars = vec!['y', 'm', 'a', 'q'];
     println!("[§14] largest int:  {}", largest(&nums));
     println!("[§14] largest char: {}", largest(&chars));
 
@@ -898,13 +1039,26 @@ fn section_14_generics() {
 fn section_15_trait_objects() {
     // Heterogeneous collection of Drawables
     let shapes: Vec<Box<dyn Drawable>> = vec![
-        Box::new(Circle { x: 0.0, y: 0.0, radius: 1.0 }),
-        Box::new(Rect   { x: 1.0, y: 1.0, w: 3.0, h: 2.0 }),
-        Box::new(Circle { x: 5.0, y: 5.0, radius: 2.0 }),
+        Box::new(Circle {
+            x: 0.0,
+            y: 0.0,
+            radius: 1.0,
+        }),
+        Box::new(Rect {
+            x: 1.0,
+            y: 1.0,
+            w: 3.0,
+            h: 2.0,
+        }),
+        Box::new(Circle {
+            x: 5.0,
+            y: 5.0,
+            radius: 2.0,
+        }),
     ];
 
     for shape in &shapes {
-        shape.draw();  // dynamic dispatch — vtable lookup at runtime
+        shape.draw(); // dynamic dispatch — vtable lookup at runtime
     }
 
     // ── impl Trait vs dyn Trait ───────────────────────────────────────────────
@@ -913,8 +1067,20 @@ fn section_15_trait_objects() {
 
     // Returning dyn Trait from function
     fn pick_shape(use_circle: bool) -> Box<dyn Drawable> {
-        if use_circle { Box::new(Circle { x:0.0, y:0.0, radius:1.0 }) }
-        else          { Box::new(Rect   { x:0.0, y:0.0, w:1.0, h:1.0 }) }
+        if use_circle {
+            Box::new(Circle {
+                x: 0.0,
+                y: 0.0,
+                radius: 1.0,
+            })
+        } else {
+            Box::new(Rect {
+                x: 0.0,
+                y: 0.0,
+                w: 1.0,
+                h: 1.0,
+            })
+        }
     }
     pick_shape(true).draw();
     pick_shape(false).draw();
@@ -929,9 +1095,9 @@ fn section_15_trait_objects() {
 // without making T a type parameter of the trait itself.
 
 trait Container {
-    type Item;                           // associated type
+    type Item; // associated type
     fn first(&self) -> Option<&Self::Item>;
-    fn last(&self)  -> Option<&Self::Item>;
+    fn last(&self) -> Option<&Self::Item>;
     fn count(&self) -> usize;
 }
 
@@ -939,14 +1105,25 @@ struct Bag<T>(Vec<T>);
 
 impl<T> Container for Bag<T> {
     type Item = T;
-    fn first(&self) -> Option<&T> { self.0.first() }
-    fn last(&self)  -> Option<&T> { self.0.last() }
-    fn count(&self) -> usize      { self.0.len() }
+    fn first(&self) -> Option<&T> {
+        self.0.first()
+    }
+    fn last(&self) -> Option<&T> {
+        self.0.last()
+    }
+    fn count(&self) -> usize {
+        self.0.len()
+    }
 }
 
 fn section_16_associated_types() {
     let bag = Bag(vec![10, 20, 30]);
-    println!("[§16] first: {:?}, last: {:?}, count: {}", bag.first(), bag.last(), bag.count());
+    println!(
+        "[§16] first: {:?}, last: {:?}, count: {}",
+        bag.first(),
+        bag.last(),
+        bag.count()
+    );
     // Compare with generics: Container<Item=T> would require spelling out T every time.
     // Associated types give one-to-one relationship: one Bag<T> → one Item type.
     let bag2 = Bag(vec![0.0, 0.0, 0.2]);
@@ -956,6 +1133,78 @@ fn section_16_associated_types() {
 // =============================================================================
 // §17  CLOSURES
 // =============================================================================
+fn apply_twice<F>(f: F, x: i32) -> i32
+where
+    F: Fn(i32) -> i32,
+{
+    f(f(x))
+}
+
+fn fn_trait() {
+    let multiplier = 2;
+    let caller = |x: i32| x*multiplier;
+    let v = 1i32;
+    let applied = apply_twice(caller, v);
+    println!("[§17] applied: {}", applied);
+    assert_eq!(apply_twice(caller, 5), 20);
+    assert_eq!(caller(10), 20);
+}
+
+fn for_each_index<F>(mut f: F, count: i32)
+where F: FnMut(i32), {
+    for i in 0..count {
+        f(i);
+    }
+}
+
+fn fnmut_trait() {
+    let mut sum = 0;
+    let mut accumulator = |x: i32| sum += x;
+    for_each_index(accumulator, 3);
+    assert_eq!(sum, 0 + 1 + 2);
+}
+
+fn run_once<F> (f: F)
+where F: FnOnce() -> String {
+    let s = f();
+    println!("{}", s);
+}
+
+fn fnonce_trait() {
+    let s = String::from("Hello, FnOnce!");
+    let consumer = move || s; // moves s into closure
+    run_once(consumer); // consumer moved here, can only be called once
+}
+
+fn closures_traits() {
+    // trait definitions in STD:
+    /*
+    pub trait FnOnce<Args> {
+        type Output;
+        // Takes ownership of self – can only be called once.
+        // Consumes the closure, so it can move captured variables out.
+        fn call_once(self, args: Args) -> Self::Output;
+    }
+
+    pub trait FnMut<Args>: FnOnce<Args> {
+        // Takes &mut self – can be called multiple times, may mutate state.
+        // Requires mutable access to the closure, so it can mutate captured variables.
+        fn call_mut(&mut self, args: Args) -> Self::Output;
+    }
+
+    pub trait Fn<Args>: FnMut<Args> {
+        // Takes &self – shared, non-mutating calls.
+        // It cannot mutate the captured variables and can be called multiple times, even
+        // concurrently if Sync.
+        fn call(&self, args: Args) -> Self::Output;
+    }
+    */
+
+    fn_trait();
+    fnmut_trait();
+    fnonce_trait();
+}
+
 fn section_17_closures() {
     // Closure syntax: |args| body  or  |args| { multi-line body }
     let square = |x: i32| x * x;
@@ -963,7 +1212,7 @@ fn section_17_closures() {
 
     // ── Capturing environment ─────────────────────────────────────────────────
     let offset = 10;
-    let add_offset = |x| x + offset;   // borrows offset
+    let add_offset = |x| x + offset; // borrows offset
     println!("[§17] add_offset(5): {}", add_offset(5));
 
     // move closure — takes ownership of captured vars (needed for threads)
@@ -977,20 +1226,30 @@ fn section_17_closures() {
     // FnMut  — can be called many times, mutably borrows captured vars
     // FnOnce — can be called ONCE (e.g. moves a value out)
 
-    fn apply<F: Fn(i32) -> i32>(f: F, x: i32) -> i32 { f(x) }
-    fn apply_mut<F: FnMut() -> i32>(mut f: F) -> i32 { f() }
-    fn apply_once<F: FnOnce() -> String>(f: F) -> String { f() }
+    fn apply<F: Fn(i32) -> i32>(f: F, x: i32) -> i32 {
+        f(x)
+    }
+    fn apply_mut<F: FnMut() -> i32>(mut f: F) -> i32 {
+        f()
+    }
+    fn apply_once<F: FnOnce() -> String>(f: F) -> String {
+        f()
+    }
 
-    apply_mut(|| 3 );
+    apply_mut(|| 3);
     println!("[§17] apply: {}", apply(|x| x * 3, 7));
 
     let mut count = 0;
-    let mut counter = || { count += 1; count };
+    let mut counter = || {
+        count += 1;
+        count
+    };
     println!("[§17] counter: {} {}", counter(), counter());
 
+    // consumer is a FnOnce, it is moved into apply_once, thus it can be used only once.
     let s = String::from("consumed");
-    let consumer = move || s;       // FnOnce — moves s
-    println!("[§17] once: {}", apply_once(consumer));
+    let consumer = move || s; // FnOnce — moves s
+    println!("[§17] once: {}", apply_once(consumer)); // consumer moved here, no longer available.
 
     // ── Closures as return values ─────────────────────────────────────────────
     fn make_adder(n: i32) -> impl Fn(i32) -> i32 {
@@ -1001,14 +1260,18 @@ fn section_17_closures() {
 
     // ── Storing closures in structs ───────────────────────────────────────────
     struct Memoize<F: Fn(i32) -> i32> {
-        func:   F,
-        cache:  Option<i32>,
+        func: F,
+        cache: Option<i32>,
     }
     impl<F: Fn(i32) -> i32> Memoize<F> {
         fn call(&mut self, arg: i32) -> i32 {
             match self.cache {
                 Some(v) => v,
-                None    => { let v = (self.func)(arg); self.cache = Some(v); v }
+                None => {
+                    let v = (self.func)(arg);
+                    self.cache = Some(v);
+                    v
+                }
             }
         }
     }
@@ -1042,19 +1305,23 @@ fn section_18_iterators() {
     // into_iter()  → yields T         (consumes the collection)
 
     // ── Adapters (lazy — nothing runs until consumed) ─────────────────────────
-    let result: Vec<i32> = v.iter()
-        .filter(|&&x| x % 2 == 0)   // keep evens: [2,4,6,8,10]
-        .map(|&x| x * x)             // square them: [4,16,36,64,100]
-        .take(3)                     // first 3:   [4,16,36]
+    let result: Vec<i32> = v
+        .iter()
+        .filter(|&&x| x % 2 == 0) // keep evens: [2,4,6,8,10]
+        .map(|&x| x * x) // square them: [4,16,36,64,100]
+        .take(3) // first 3:   [4,16,36]
         .collect();
     println!("[§18] filter+map+take: {:?}", result);
 
     // ── Consumers ────────────────────────────────────────────────────────────
-    let sum:     i32 = v.iter().sum();
+    let sum: i32 = v.iter().sum();
     let product: i32 = v.iter().product();
-    let max           = v.iter().max().unwrap();
-    let count         = v.iter().filter(|&&x| x > 5).count();
-    println!("[§18] sum={} product={} max={} count_gt5={}", sum, product, max, count);
+    let max = v.iter().max().unwrap();
+    let count = v.iter().filter(|&&x| x > 5).count();
+    println!(
+        "[§18] sum={} product={} max={} count_gt5={}",
+        sum, product, max, count
+    );
 
     // ── fold / reduce ────────────────────────────────────────────────────────
     let factorial: u64 = (1..=10).fold(1, |acc, x| acc * x);
@@ -1066,7 +1333,7 @@ fn section_18_iterators() {
     println!("[§18] flat_map: {:?}", chars);
 
     // ── zip ───────────────────────────────────────────────────────────────────
-    let names  = vec!["Alice", "Bob", "Carol"];
+    let names = vec!["Alice", "Bob", "Carol"];
     let scores = vec![95, 87, 92];
     let paired: Vec<(&&str, &i32)> = names.iter().zip(scores.iter()).collect();
     println!("[§18] zip: {:?}", paired);
@@ -1103,7 +1370,12 @@ fn section_18_iterators() {
     println!("[§18] next: {:?}", iter.next()); // iterate to the future item.
 
     // ── scan (stateful map) ───────────────────────────────────────────────────
-    let running_sum: Vec<i32> = (1..=5).scan(0, |acc, x| { *acc += x; Some(*acc) }).collect();
+    let running_sum: Vec<i32> = (1..=5)
+        .scan(0, |acc, x| {
+            *acc += x;
+            Some(*acc)
+        })
+        .collect();
     println!("[§18] running sum: {:?}", running_sum);
 }
 
@@ -1113,23 +1385,25 @@ fn section_18_iterators() {
 fn section_19_collections() {
     // ── Vec<T> ────────────────────────────────────────────────────────────────
     let mut v: Vec<i32> = Vec::new();
-    v.push(1); v.push(2); v.push(3);
-    v.insert(1, 99);            // insert 99 at index 1
-    v.remove(2);                // remove index 2
-    v.retain(|&x| x > 1);      // keep elements > 1
+    v.push(1);
+    v.push(2);
+    v.push(3);
+    v.insert(1, 99); // insert 99 at index 1
+    v.remove(2); // remove index 2
+    v.retain(|&x| x > 1); // keep elements > 1
     v.sort();
-    v.dedup();                  // remove consecutive duplicates
+    v.dedup(); // remove consecutive duplicates
     v.extend([10, 11, 12]);
     println!("[§19] Vec: {:?}, len={}", v, v.len());
     println!("[§19] contains(99): {}", v.contains(&99));
     // Vec with capacity
     let mut cap_v: Vec<i32> = Vec::with_capacity(100);
-    println!("[§19] capacity: {}", cap_v.capacity());   // no realloc up to 100 items
+    println!("[§19] capacity: {}", cap_v.capacity()); // no realloc up to 100 items
 
     // ── HashMap<K, V> ────────────────────────────────────────────────────────
     let mut scores: HashMap<String, i32> = HashMap::new();
     scores.insert(String::from("Alice"), 95);
-    scores.insert(String::from("Bob"),   87);
+    scores.insert(String::from("Bob"), 87);
 
     // entry API — insert-or-update
     scores.entry(String::from("Alice")).and_modify(|s| *s += 5);
@@ -1140,8 +1414,8 @@ fn section_19_collections() {
     // or_insert_with – compute_expensive_score is only called if "Bob" is absent
     scores.entry("Bob").or_insert_with(|| compute_expensive_score("Bob"));
     */
-    scores.entry(String::from("Carol")).or_insert(70);  // insert only if absent
-    scores.entry(String::from("Dave")).or_insert_with(|| 80);  // lazy insert, the closure
+    scores.entry(String::from("Carol")).or_insert(70); // insert only if absent
+    scores.entry(String::from("Dave")).or_insert_with(|| 80); // lazy insert, the closure
 
     println!("[§19] scores: {:?}", scores);
     println!("[§19] Alice:  {:?}", scores.get("Alice"));
@@ -1166,9 +1440,9 @@ fn section_19_collections() {
     set.insert(6);
     set.remove(&1);
     let other = HashSet::from([3, 4, 5, 6, 7]);
-    let union:        HashSet<_> = set.union(&other).collect();
+    let union: HashSet<_> = set.union(&other).collect();
     let intersection: HashSet<_> = set.intersection(&other).collect();
-    let difference:   HashSet<_> = set.difference(&other).collect();
+    let difference: HashSet<_> = set.difference(&other).collect();
     println!("[§19] set: {:?}", set);
     println!("[§19] union: {:?}", union);
     println!("[§19] intersection: {:?}", intersection);
@@ -1180,9 +1454,10 @@ fn section_19_collections() {
     btree.insert("banana", 2);
     btree.remove("apple");
 
-
     // Iteration is in sorted key order
-    for (k, v) in &btree { print!("{}:{} ", k, v); }
+    for (k, v) in &btree {
+        print!("{}:{} ", k, v);
+    }
     println!();
 
     let mut iter = btree.iter().rev();
@@ -1209,7 +1484,10 @@ fn section_20_smart_pointers() {
 
     // Recursive type impossible without Box (infinite size at compile time)
     #[derive(Debug)]
-    enum List { Cons(i32, Box<List>), Nil }
+    enum List {
+        Cons(i32, Box<List>),
+        Nil,
+    }
     let list = List::Cons(1, Box::new(List::Cons(2, Box::new(List::Nil))));
     println!("[§20] List: {:?}", list);
 
@@ -1220,10 +1498,10 @@ fn section_20_smart_pointers() {
     // are still mutable via their &self receivers without a mut &self receiver. Keep in mind,
     // the interior mutability is a design pattern, it is not a language feature.
     let a = Rc::new(String::from("shared"));
-    let b_rc = Rc::clone(&a);       // bump ref count to 2
-    let mut c_rc = Rc::clone(&a);   // bump ref count to 3
+    let b_rc = Rc::clone(&a); // bump ref count to 2
+    let mut c_rc = Rc::clone(&a); // bump ref count to 3
 
-    println!("[§20] Rc strong count: {}", Rc::strong_count(&a));  // 3
+    println!("[§20] Rc strong count: {}", Rc::strong_count(&a)); // 3
     println!("[§20] Rc value: {}", a);
     drop(b_rc);
 
@@ -1236,9 +1514,9 @@ fn section_20_smart_pointers() {
     // ── Weak<T>: non-owning reference (breaks cycles) ─────────────────────────
     let strong = Rc::new(42);
     let weak: std::rc::Weak<i32> = Rc::downgrade(&strong);
-    println!("[§20] Weak upgrade: {:?}", weak.upgrade());   // Some(42)
+    println!("[§20] Weak upgrade: {:?}", weak.upgrade()); // Some(42)
     drop(strong);
-    println!("[§20] Weak upgrade after drop: {:?}", weak.upgrade());  // None
+    println!("[§20] Weak upgrade after drop: {:?}", weak.upgrade()); // None
 
     // ── Arc<T>: atomic Rc — thread-safe ───────────────────────────────────────
     let arc = Arc::new(vec![1, 2, 3]);
@@ -1249,8 +1527,13 @@ fn section_20_smart_pointers() {
     // Returning data in Cow:
     use std::borrow::Cow;
     fn ensure_no_spaces<'a>(s: &'a str) -> Cow<'a, str> {
-        if s.contains(' ') { Cow::Owned(s.replace(' ', "_")) }  // allocates
-        else               { Cow::Borrowed(s) }                  // zero-copy
+        if s.contains(' ') {
+            Cow::Owned(s.replace(' ', "_"))
+        }
+        // allocates
+        else {
+            Cow::Borrowed(s)
+        } // zero-copy
     }
     println!("[§20] Cow no-op: {}", ensure_no_spaces("hello"));
     println!("[§20] Cow owned: {}", ensure_no_spaces("hello world"));
@@ -1260,7 +1543,7 @@ fn section_20_smart_pointers() {
         let processed = data.replace("foo", "bar"); // this implicitly calls into_owned if needed
         processed
     }
-    let r = process(Cow::Borrowed("foo bar"));   // no extra allocation
+    let r = process(Cow::Borrowed("foo bar")); // no extra allocation
     let s = process(Cow::Owned(String::from("foo bar")));
 }
 
@@ -1272,12 +1555,12 @@ fn section_21_interior_mutability() {
     let c = Cell::new(5);
     let r = &c;
     c.set(11);
-    r.set(12);                        // mutate through shared ref
+    r.set(12); // mutate through shared ref
     println!("[§21] Cell: {}", c.get());
 
     // ── RefCell<T>: any type, runtime borrow checking ─────────────────────────
     let rc = RefCell::new(vec![1, 2, 3]);
-    rc.borrow_mut().push(4);          // dynamic borrow check — panics on violation
+    rc.borrow_mut().push(4); // dynamic borrow check — panics on violation
     println!("[§21] RefCell: {:?}", rc.borrow());
 
     // ── Rc<RefCell<T>>: the shared-mutable-state pattern (single-threaded) ────
@@ -1287,15 +1570,15 @@ fn section_21_interior_mutability() {
     let c2 = Rc::clone(&shared);
     *c1.borrow_mut() += 10;
     *c2.borrow_mut() += 20;
-    println!("[§21] Rc<RefCell>: {}", shared.borrow());   // 30
+    println!("[§21] Rc<RefCell>: {}", shared.borrow()); // 30
 
     // ── Arc<Mutex<T>>: the shared-mutable-state pattern (multi-threaded) ─────
     // (See §22 for the threading example)
     let protected = Arc::new(Mutex::new(0i32));
     {
-        let mut guard = protected.lock().unwrap();  // blocks until free
+        let mut guard = protected.lock().unwrap(); // blocks until free
         *guard += 100;
-    }  // MutexGuard dropped here → unlocked automatically
+    } // MutexGuard dropped here → unlocked automatically
     println!("[§21] Arc<Mutex>: {}", *protected.lock().unwrap());
 }
 
@@ -1320,8 +1603,12 @@ fn std_mpsc_channel() {
 
     // Multiple producers
     let tx2 = tx.clone();
-    let h1 = thread::spawn(move || { tx.send(String::from("ping")).unwrap(); });
-    let h2 = thread::spawn(move || { tx2.send(String::from("pong")).unwrap(); });
+    let h1 = thread::spawn(move || {
+        tx.send(String::from("ping")).unwrap();
+    });
+    let h2 = thread::spawn(move || {
+        tx2.send(String::from("pong")).unwrap();
+    });
     h1.join().unwrap();
     h2.join().unwrap();
 
@@ -1331,7 +1618,6 @@ fn std_mpsc_channel() {
         println!("[§22] channel received: {}", received);
     }
 }
-
 
 // =============================================================================
 // CROSSBEAM::Channels
@@ -1439,7 +1725,7 @@ fn section_22_concurrency() {
     let handle = thread::spawn(|| {
         println!("[§22] hello from spawned thread");
     });
-    handle.join().unwrap();   // wait for thread to finish
+    handle.join().unwrap(); // wait for thread to finish
 
     // ── move closure captures by value ────────────────────────────────────────
     let msg = String::from("moved");
@@ -1458,7 +1744,9 @@ fn section_22_concurrency() {
             *n += 1;
         }));
     }
-    for h in handles { h.join().unwrap(); }
+    for h in handles {
+        h.join().unwrap();
+    }
     println!("[§22] Mutex counter: {}", *counter.lock().unwrap()); // 5
 
     std_mpsc_channel();
@@ -1482,25 +1770,27 @@ struct ReadyFuture(i32);
 impl Future for ReadyFuture {
     type Output = i32;
     fn poll(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<i32> {
-        Poll::Ready(self.0)   // immediately ready
+        Poll::Ready(self.0) // immediately ready
     }
 }
 
 // async fn desugars to:  fn foo() -> impl Future<Output=i32>
-async fn async_add(a: i32, b: i32) -> i32 { a + b }
+async fn async_add(a: i32, b: i32) -> i32 {
+    a + b
+}
 async fn async_pipeline() -> String {
-    let sum = async_add(2, 3).await;          // .await suspends until future is ready
+    let sum = async_add(2, 3).await; // .await suspends until future is ready
     format!("sum = {}", sum)
 }
 
 // ── Returning Pin<Box<dyn Future>> from trait methods ─────────────────────────
 trait AsyncGreeter {
-    fn greet<'a>(&'a self, name: &'a str) -> Pin<Box<dyn Future<Output=String> + 'a>>;
+    fn greet<'a>(&'a self, name: &'a str) -> Pin<Box<dyn Future<Output = String> + 'a>>;
 }
 
 struct Bot;
 impl AsyncGreeter for Bot {
-    fn greet<'a>(&'a self, name: &'a str) -> Pin<Box<dyn Future<Output=String> + 'a>> {
+    fn greet<'a>(&'a self, name: &'a str) -> Pin<Box<dyn Future<Output = String> + 'a>> {
         Box::pin(async move { format!("Hello, {}!", name) })
     }
 }
@@ -1566,10 +1856,10 @@ fn section_24_macros() {
     let v2: Vec<&str> = my_vec![];
     println!("[§24] empty my_vec: {:?}", v2);
 
-    let m = map!{ "a" => 1, "b" => 2 };
+    let m = map! { "a" => 1, "b" => 2 };
     println!("[§24] map: {:?}", m);
 
-    let m2: HashMap<&str, i32> = map!{};
+    let m2: HashMap<&str, i32> = map! {};
     println!("[§24] empty map: {:?}", m2);
 
     assert_approx_eq!(3.14159f64, std::f64::consts::PI, 0.001);
@@ -1587,21 +1877,30 @@ fn section_24_macros() {
 //   pub(crate) — public within the crate
 
 mod geometry {
-    pub struct Rectangle { pub w: f64, pub h: f64 }
+    pub struct Rectangle {
+        pub w: f64,
+        pub h: f64,
+    }
     impl Rectangle {
-        pub fn new(w: f64, h: f64) -> Self { Rectangle { w, h } }
-        pub fn area(&self) -> f64 { self.w * self.h }
-        fn secret(&self) {}     // private — only accessible inside this module
+        pub fn new(w: f64, h: f64) -> Self {
+            Rectangle { w, h }
+        }
+        pub fn area(&self) -> f64 {
+            self.w * self.h
+        }
+        fn secret(&self) {} // private — only accessible inside this module
     }
 
     pub mod advanced {
-        pub fn perimeter(r: &super::Rectangle) -> f64 { 2.0 * (r.w + r.h) }
+        pub fn perimeter(r: &super::Rectangle) -> f64 {
+            2.0 * (r.w + r.h)
+        }
     }
 }
 
 // use to bring into scope
-use geometry::Rectangle;
 use geometry::advanced::perimeter;
+use geometry::Rectangle;
 
 // =============================================================================
 // §26  TYPE ALIASES & NEWTYPE PATTERN
@@ -1609,8 +1908,8 @@ use geometry::advanced::perimeter;
 
 // ── Type alias: just a rename, no new type semantics ──────────────────────────
 type Kilometers = i32;
-type Result<T>  = std::result::Result<T, AppError>;  // scoped alias
-type Thunk      = Box<dyn Fn() -> String>;            // name a complex type
+type Result<T> = std::result::Result<T, AppError>; // scoped alias
+type Thunk = Box<dyn Fn() -> String>; // name a complex type
 
 // ── Newtype: a struct wrapper that IS a distinct type ─────────────────────────
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
@@ -1620,7 +1919,9 @@ struct Meters(f64);
 struct Feet(f64);
 
 impl Meters {
-    fn to_feet(self) -> Feet { Feet(self.0 * 3.28084) }
+    fn to_feet(self) -> Feet {
+        Feet(self.0 * 3.28084)
+    }
 }
 
 impl fmt::Display for Meters {
@@ -1630,8 +1931,8 @@ impl fmt::Display for Meters {
 }
 
 fn section_26_type_aliases_newtype() {
-    let km: Kilometers = 5;      // just i32 under the hood
-    let m  = Meters(1.8);
+    let km: Kilometers = 5; // just i32 under the hood
+    let m = Meters(1.8);
     let ft = m.to_feet();
     println!("[§26] {} = {:?}", m, ft);
 
@@ -1642,32 +1943,49 @@ fn section_26_type_aliases_newtype() {
 // =============================================================================
 // §27  OPERATOR OVERLOADING
 // =============================================================================
-use std::ops::{Add, Sub, Mul, Neg, Index};
+use std::ops::{Add, Index, Mul, Neg, Sub};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-struct Vec2 { x: f64, y: f64 }
+struct Vec2 {
+    x: f64,
+    y: f64,
+}
 
 impl Vec2 {
-    fn new(x: f64, y: f64) -> Self { Vec2 { x, y } }
-    fn length(&self) -> f64 { (self.x*self.x + self.y*self.y).sqrt() }
-    fn dot(&self, other: Vec2) -> f64 { self.x*other.x + self.y*other.y }
+    fn new(x: f64, y: f64) -> Self {
+        Vec2 { x, y }
+    }
+    fn length(&self) -> f64 {
+        (self.x * self.x + self.y * self.y).sqrt()
+    }
+    fn dot(&self, other: Vec2) -> f64 {
+        self.x * other.x + self.y * other.y
+    }
 }
 
 impl Add for Vec2 {
     type Output = Vec2;
-    fn add(self, rhs: Vec2) -> Vec2 { Vec2::new(self.x + rhs.x, self.y + rhs.y) }
+    fn add(self, rhs: Vec2) -> Vec2 {
+        Vec2::new(self.x + rhs.x, self.y + rhs.y)
+    }
 }
 impl Sub for Vec2 {
     type Output = Vec2;
-    fn sub(self, rhs: Vec2) -> Vec2 { Vec2::new(self.x - rhs.x, self.y - rhs.y) }
+    fn sub(self, rhs: Vec2) -> Vec2 {
+        Vec2::new(self.x - rhs.x, self.y - rhs.y)
+    }
 }
 impl Mul<f64> for Vec2 {
     type Output = Vec2;
-    fn mul(self, s: f64) -> Vec2 { Vec2::new(self.x * s, self.y * s) }
+    fn mul(self, s: f64) -> Vec2 {
+        Vec2::new(self.x * s, self.y * s)
+    }
 }
 impl Neg for Vec2 {
     type Output = Vec2;
-    fn neg(self) -> Vec2 { Vec2::new(-self.x, -self.y) }
+    fn neg(self) -> Vec2 {
+        Vec2::new(-self.x, -self.y)
+    }
 }
 impl fmt::Display for Vec2 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1678,12 +1996,12 @@ impl fmt::Display for Vec2 {
 fn section_27_operator_overloading() {
     let a = Vec2::new(1.0, 2.0);
     let b = Vec2::new(3.0, 4.0);
-    println!("[§27] a+b = {}",       a + b);
-    println!("[§27] a-b = {}",       a - b);
-    println!("[§27] a*2 = {}",       a * 2.0);
-    println!("[§27] -a  = {}",       -a);
-    println!("[§27] |b| = {:.1}",    b.length());
-    println!("[§27] a·b = {:.1}",    a.dot(b));
+    println!("[§27] a+b = {}", a + b);
+    println!("[§27] a-b = {}", a - b);
+    println!("[§27] a*2 = {}", a * 2.0);
+    println!("[§27] -a  = {}", -a);
+    println!("[§27] |b| = {:.1}", b.length());
+    println!("[§27] a·b = {:.1}", a.dot(b));
 }
 
 // =============================================================================
@@ -1691,38 +2009,56 @@ fn section_27_operator_overloading() {
 // =============================================================================
 #[derive(Debug)]
 struct Request {
-    url:     String,
-    method:  String,
+    url: String,
+    method: String,
     headers: HashMap<String, String>,
-    body:    Option<String>,
+    body: Option<String>,
     timeout: u32,
 }
 
 #[derive(Default)]
 struct RequestBuilder {
-    url:     String,
-    method:  String,
+    url: String,
+    method: String,
     headers: HashMap<String, String>,
-    body:    Option<String>,
+    body: Option<String>,
     timeout: u32,
 }
 
 impl RequestBuilder {
     fn new(url: &str) -> Self {
         RequestBuilder {
-            url:     url.to_string(),
-            method:  String::from("GET"),
+            url: url.to_string(),
+            method: String::from("GET"),
             timeout: 30,
             ..Default::default()
         }
     }
     // note: every the "self" receiver consumes the object by returning it.
-    fn method(mut self, m: &str) -> Self   { self.method = m.to_string(); self }
-    fn header(mut self, k: &str, v: &str) -> Self { self.headers.insert(k.to_string(), v.to_string()); self }
-    fn body(mut self, b: &str) -> Self     { self.body = Some(b.to_string()); self }
-    fn timeout(mut self, secs: u32) -> Self { self.timeout = secs; self }
+    fn method(mut self, m: &str) -> Self {
+        self.method = m.to_string();
+        self
+    }
+    fn header(mut self, k: &str, v: &str) -> Self {
+        self.headers.insert(k.to_string(), v.to_string());
+        self
+    }
+    fn body(mut self, b: &str) -> Self {
+        self.body = Some(b.to_string());
+        self
+    }
+    fn timeout(mut self, secs: u32) -> Self {
+        self.timeout = secs;
+        self
+    }
     fn build(self) -> Request {
-        Request { url: self.url, method: self.method, headers: self.headers, body: self.body, timeout: self.timeout }
+        Request {
+            url: self.url,
+            method: self.method,
+            headers: self.headers,
+            body: self.body,
+            timeout: self.timeout,
+        }
     }
 }
 
@@ -1741,10 +2077,15 @@ fn section_28_builder_pattern() {
 // §29  CUSTOM ITERATOR
 // =============================================================================
 
-struct Fibonacci { a: u64, b: u64 }
+struct Fibonacci {
+    a: u64,
+    b: u64,
+}
 
 impl Fibonacci {
-    fn new() -> Self { Fibonacci { a: 0, b: 1 } }
+    fn new() -> Self {
+        Fibonacci { a: 0, b: 1 }
+    }
 }
 
 impl Iterator for Fibonacci {
@@ -1753,7 +2094,7 @@ impl Iterator for Fibonacci {
         let next = self.a;
         self.a = self.b;
         self.b = next + self.b;
-        Some(next)    // infinite — return None when you want to stop
+        Some(next) // infinite — return None when you want to stop
     }
 }
 
@@ -1777,11 +2118,11 @@ fn section_30_unsafe_raw_pointers() {
     // Creating them is safe. Dereferencing them requires unsafe.
 
     let mut x = 42i32;
-    let r1: *const i32 = &x;       // immutable raw pointer
-    let r2: *mut   i32 = &mut x;   // mutable raw pointer
+    let r1: *const i32 = &x; // immutable raw pointer
+    let r2: *mut i32 = &mut x; // mutable raw pointer
 
     unsafe {
-        println!("[§30] *r1 = {}", *r1);  // dereference
+        println!("[§30] *r1 = {}", *r1); // dereference
         *r2 = 100;
         println!("[§30] *r2 after write = {}", *r2);
     }
@@ -1792,10 +2133,10 @@ fn section_30_unsafe_raw_pointers() {
 
     // ── Box::into_raw / Box::from_raw (manual heap management) ────────────────
     let b = Box::new(String::from("manual heap"));
-    let raw: *mut String = Box::into_raw(b);  // Box leaked — no drop
+    let raw: *mut String = Box::into_raw(b); // Box leaked — no drop
     unsafe {
         println!("[§30] raw ptr: {}", *raw);
-        let _ = Box::from_raw(raw);           // re-box → dropped here
+        let _ = Box::from_raw(raw); // re-box → dropped here
     }
 
     // ── ptr::copy_nonoverlapping (like memcpy) ────────────────────────────────
@@ -1807,7 +2148,9 @@ fn section_30_unsafe_raw_pointers() {
     println!("[§30] memcpy result: {:?}", dst);
 
     // ── unsafe fn ────────────────────────────────────────────────────────────
-    unsafe fn dangerous() -> i32 { 42 }
+    unsafe fn dangerous() -> i32 {
+        42
+    }
     let v = unsafe { dangerous() };
     println!("[§30] unsafe fn: {}", v);
 
@@ -1816,7 +2159,9 @@ fn section_30_unsafe_raw_pointers() {
     // unsafe impl Sendable for MyType { }  // you are asserting safety
 
     // ── extern "C": calling C functions ──────────────────────────────────────
-    unsafe extern "C" { fn abs(x: i32) -> i32; }
+    unsafe extern "C" {
+        fn abs(x: i32) -> i32;
+    }
     let abs_val = unsafe { abs(-42) };
     println!("[§30] C abs(-42) = {}", abs_val);
 }
@@ -1858,22 +2203,32 @@ fn section_31_attributes() {
 
     // ── must_use ─────────────────────────────────────────────────────────────
     #[must_use]
-    fn important_result() -> i32 { 42 }
-    let _ = important_result();  // suppress the warning by binding to _
+    fn important_result() -> i32 {
+        42
+    }
+    let _ = important_result(); // suppress the warning by binding to _
 
     // ── deprecated ────────────────────────────────────────────────────────────
     #[deprecated(since = "2.0.0", note = "use new_api() instead")]
     fn old_api() {}
 
     // ── repr: control memory layout ───────────────────────────────────────────
-    #[repr(C)]          // C-compatible layout (for FFI)
-    struct CStruct { x: i32, y: i32 }
+    #[repr(C)] // C-compatible layout (for FFI)
+    struct CStruct {
+        x: i32,
+        y: i32,
+    }
 
-    #[repr(packed)]     // no padding between fields
-    struct Packed { a: u8, b: u32 }
+    #[repr(packed)] // no padding between fields
+    struct Packed {
+        a: u8,
+        b: u32,
+    }
 
-    #[repr(align(16))]  // 16-byte alignment
-    struct Aligned { data: [u8; 16] }
+    #[repr(align(16))] // 16-byte alignment
+    struct Aligned {
+        data: [u8; 16],
+    }
 
     println!("[§31] attributes section — compile-check OK");
 }
@@ -1887,8 +2242,11 @@ fn section_32_patterns_cheatsheet() {
     // ── Destructuring everywhere ───────────────────────────────────────────────
     let (a, b, c) = (1, "two", 3.0);
     let Point2D { x, y } = Point2D { x: 3, y: 4 };
-    let [first, second, ..] = [1, 2, 3, 4, 5];  // slice pattern
-    println!("destruct: {} {} {:.0} | pt: {},{} | arr: {} {}", a, b, c, x, y, first, second);
+    let [first, second, ..] = [1, 2, 3, 4, 5]; // slice pattern
+    println!(
+        "destruct: {} {} {:.0} | pt: {},{} | arr: {} {}",
+        a, b, c, x, y, first, second
+    );
 
     // ── Tuple struct destructure ──────────────────────────────────────────────
     let Meters(val) = Meters(1.8);
@@ -1903,10 +2261,10 @@ fn section_32_patterns_cheatsheet() {
     // ── Guard in match ────────────────────────────────────────────────────────
     let num = 7;
     let desc = match num {
-        n if n < 0  => "negative",
-        0           => "zero",
+        n if n < 0 => "negative",
+        0 => "zero",
         n if n % 2 == 0 => "positive even",
-        _           => "positive odd",
+        _ => "positive odd",
     };
     println!("guard: {}", desc);
 
@@ -1914,12 +2272,14 @@ fn section_32_patterns_cheatsheet() {
     let n = 3;
     match n {
         1 | 2 | 3 => println!("one two or three"),
-        _         => {},
+        _ => {}
     }
 
     // ── let else (Rust 1.65+): early return on mismatch ───────────────────────
     fn parse_u32(s: &str) -> Option<u32> {
-        let Ok(n) = s.trim().parse::<u32>() else { return None; };
+        let Ok(n) = s.trim().parse::<u32>() else {
+            return None;
+        };
         Some(n)
     }
     println!("let-else: {:?}", parse_u32("42"));
@@ -1928,38 +2288,63 @@ fn section_32_patterns_cheatsheet() {
     // Resources tied to scope — drop at end of block automatically
     {
         let _guard = Mutex::new(0);
-        let _ = _guard.lock().unwrap();  // lock released when _guard drops
+        let _ = _guard.lock().unwrap(); // lock released when _guard drops
     }
 
     // ── Typestate pattern ────────────────────────────────────────────────────
     struct Locked;
     struct Unlocked;
-    struct Door<State> { _state: std::marker::PhantomData<State> }
+    struct Door<State> {
+        _state: std::marker::PhantomData<State>,
+    }
     impl Door<Locked> {
-        fn new()   -> Self { Door { _state: std::marker::PhantomData } }
-        fn unlock(self) -> Door<Unlocked> { Door { _state: std::marker::PhantomData } }
+        fn new() -> Self {
+            Door {
+                _state: std::marker::PhantomData,
+            }
+        }
+        fn unlock(self) -> Door<Unlocked> {
+            Door {
+                _state: std::marker::PhantomData,
+            }
+        }
     }
     impl Door<Unlocked> {
-        fn open(&self)  { println!("door opened"); }
-        fn lock(self)   -> Door<Locked> { Door { _state: std::marker::PhantomData } }
+        fn open(&self) {
+            println!("door opened");
+        }
+        fn lock(self) -> Door<Locked> {
+            Door {
+                _state: std::marker::PhantomData,
+            }
+        }
     }
     Door::<Locked>::new().unlock().open(); // compile-time state machine
 
     // ── Extension trait pattern ───────────────────────────────────────────────
-    trait StringExt { fn shout(&self) -> String; }
-    impl StringExt for str { fn shout(&self) -> String { self.to_uppercase() + "!" } }
+    trait StringExt {
+        fn shout(&self) -> String;
+    }
+    impl StringExt for str {
+        fn shout(&self) -> String {
+            self.to_uppercase() + "!"
+        }
+    }
     println!("ext trait: {}", "hello".shout());
 
     // ── Deref coercion chain ──────────────────────────────────────────────────
     // Box<String> → String → str
     let boxed_string: Box<String> = Box::new(String::from("deref chain"));
-    let s: &str = &boxed_string;      // auto-deref coercion
+    let s: &str = &boxed_string; // auto-deref coercion
     println!("deref coercion: {}", s);
 
     // ── Zero-sized types (ZSTs) ───────────────────────────────────────────────
     // PhantomData<T>, (), custom marker structs — zero runtime cost
     println!("ZST size: {} bytes", std::mem::size_of::<()>());
-    println!("PhantomData size: {} bytes", std::mem::size_of::<std::marker::PhantomData<String>>());
+    println!(
+        "PhantomData size: {} bytes",
+        std::mem::size_of::<std::marker::PhantomData<String>>()
+    );
 
     // ── std::mem utilities ────────────────────────────────────────────────────
     let mut x = 10i32;
@@ -1971,16 +2356,16 @@ fn section_32_patterns_cheatsheet() {
     println!("replace: old={} new={}", old, x);
 
     println!("size_of i64:    {} bytes", std::mem::size_of::<i64>());
-    println!("size_of String: {} bytes", std::mem::size_of::<String>());  // 24
-    println!("size_of &str:   {} bytes", std::mem::size_of::<&str>());    // 16 (fat ptr)
-    println!("size_of Vec:    {} bytes", std::mem::size_of::<Vec<u8>>());  // 24
+    println!("size_of String: {} bytes", std::mem::size_of::<String>()); // 24
+    println!("size_of &str:   {} bytes", std::mem::size_of::<&str>()); // 16 (fat ptr)
+    println!("size_of Vec:    {} bytes", std::mem::size_of::<Vec<u8>>()); // 24
 
     // ── From / Into (conversion traits) ───────────────────────────────────────
-    let s = String::from("from");           // From
-    let n: i64 = i64::from(42i32);         // widening int conversion
+    let s = String::from("from"); // From
+    let n: i64 = i64::from(42i32); // widening int conversion
     let f: f64 = f64::from(42i32);
-    let back: i32 = 42i64 as i32;          // as for truncating/primitive casts
-    let bits = f32::to_bits(3.14f32);      // bit-level reinterpretation
+    let back: i32 = 42i64 as i32; // as for truncating/primitive casts
+    let bits = f32::to_bits(3.14f32); // bit-level reinterpretation
 
     // Into is auto-derived when From is implemented:
     let s2: String = "into".into();
@@ -1989,7 +2374,7 @@ fn section_32_patterns_cheatsheet() {
     // ── TryFrom / TryInto (fallible conversions) ──────────────────────────────
     use std::convert::TryFrom;
     let big: i64 = 300;
-    let small = i8::try_from(big);         // Err — 300 doesn't fit in i8
+    let small = i8::try_from(big); // Err — 300 doesn't fit in i8
     println!("TryFrom: {:?}", small);
 
     println!("── §32 done ─────────────────────────────────────────────");
@@ -2001,22 +2386,33 @@ fn section_32_patterns_cheatsheet() {
 impl fmt::Display for Shape {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Shape::Circle(r)                   => write!(f, "Circle(r={:.1})", r),
-            Shape::Rectangle { width: w, height: h } => write!(f, "Rect({}×{})", w, h),
-            Shape::Triangle(a, b, c)           => write!(f, "Tri({},{},{})", a, b, c),
+            Shape::Circle(r) => write!(f, "Circle(r={:.1})", r),
+            Shape::Rectangle {
+                width: w,
+                height: h,
+            } => write!(f, "Rect({}×{})", w, h),
+            Shape::Triangle(a, b, c) => write!(f, "Tri({},{},{})", a, b, c),
         }
     }
 }
 
 impl fmt::Debug for Circle {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Circle {{ x:{}, y:{}, r:{} }}", self.x, self.y, self.radius)
+        write!(
+            f,
+            "Circle {{ x:{}, y:{}, r:{} }}",
+            self.x, self.y, self.radius
+        )
     }
 }
 
 impl fmt::Debug for Rect {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Rect {{ x:{}, y:{}, w:{}, h:{} }}", self.x, self.y, self.w, self.h)
+        write!(
+            f,
+            "Rect {{ x:{}, y:{}, w:{}, h:{} }}",
+            self.x, self.y, self.w, self.h
+        )
     }
 }
 
