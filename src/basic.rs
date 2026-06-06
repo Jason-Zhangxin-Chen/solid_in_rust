@@ -1150,6 +1150,7 @@ fn fn_trait() {
     assert_eq!(caller(10), 20);
 }
 
+// mut f: F tells the f closure can modify the captures.
 fn for_each_index<F>(mut f: F, count: i32)
 where F: FnMut(i32), {
     for i in 0..count {
@@ -1158,22 +1159,23 @@ where F: FnMut(i32), {
 }
 
 fn fnmut_trait() {
-    let mut sum = 0;
-    let mut accumulator = |x: i32| sum += x;
+    let mut sum = 0; // captured and modified by the closure.
+    let mut accumulator = |x: i32| sum += x; // accumulator should be mutable asked by the trait.
     for_each_index(accumulator, 3);
     assert_eq!(sum, 0 + 1 + 2);
 }
 
 fn run_once<F> (f: F)
 where F: FnOnce() -> String {
-    let s = f();
+    let s = f(); // the closure function should return a String value.
     println!("{}", s);
 }
 
 fn fnonce_trait() {
     let s = String::from("Hello, FnOnce!");
-    let consumer = move || s; // moves s into closure
+    let consumer = move || s; // moves s into closure, and return it.
     run_once(consumer); // consumer moved here, can only be called once
+    // consumer is no long available from here, as it was consumed by run_once();
 }
 
 fn closures_traits() {
