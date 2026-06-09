@@ -18,6 +18,8 @@
 //
 // You want to avoid unnecessary allocations in performance‑sensitive paths.
 
+use std::borrow::Cow;
+
 fn process_text_on_demand() {
     use std::borrow::Cow;
 
@@ -164,4 +166,29 @@ fn avoid_clone() {
 
     let v1 = ensure_owned(Cow::Borrowed(&borrowed)); // clones
     let v2 = ensure_owned(Cow::Owned(owned));        // no clone, moves the Vec
+}
+
+
+fn process_txt(txt: &str) -> Cow<'_, str> {
+    if txt.contains('<') {
+        Cow::Owned(txt.replace("<", "&lt;"))
+    } else {
+        Cow::Borrowed(txt)
+    }
+}
+
+fn process_txt2(text: &str) -> Cow<str> {
+    if text.contains('<') {
+        Cow::Owned(text.replace("<", "&lt;"))
+    } else {
+        Cow::Borrowed(text)
+    }
+}
+
+fn process_txt3<'a>(text: &'a str) -> Cow<'a, str> {
+    if text.contains('<') {
+        Cow::Owned(text.replace("<", "&lt;"))
+    } else {
+        Cow::Borrowed(text)
+    }
 }
