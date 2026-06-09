@@ -1,6 +1,63 @@
 use std::marker::PhantomPinned;
 use std::pin::{pin, Pin};
 
+// Pin and Unpin solve one fundamental problem in Rust: safe manipulation of data that cannot be
+// moved in memory. Rust’s ownership model assumes that values can be moved freely
+// (just a memcpy, leaving the old location invalid). But some data structures contain
+// self-referential pointers that become dangling if the value is moved. Pin prevents moves,
+// and Unpin marks types that are safe to move even when pinned.
+
+// async / await and Futures (the primary motivation).
+// Every async block or async fn compiles into an anonymous future – a state machine that holds
+// local variables across .await points.
+//
+// rust
+// async fn example() {
+//     let mut x = vec![1, 2, 3];
+//     let y = &x;
+//     do_something().await; // yields, then resumes
+//     println!("{:?}", y);
+// }
+// The generated future may store y as a pointer into the future’s own struct
+// (it borrows x, which is itself a field of the future). This makes the future self-referential.
+// If the future were moved in memory after starting, y would become dangling → undefined behaviour.
+//
+// The future produced by async blocks is !Unpin by default.
+//
+// The executor pins the future (using Box::pin or pin!) before polling it, guaranteeing that
+// once started, the future never moves.
+//
+// Unpin is not implemented for these futures, so the compiler prevents moving them after they
+// are pinned.
+//
+// This is the most widespread use of Pin: every asynchronous program in Rust relies on it to
+// safely handle suspending and resuming self-referential futures.
+
+
+// Self-referential data structures.
+// Any struct that stores a pointer to another field of itself needs Pin to be used safely if you
+// ever want to move it after construction.
+fn self_referential_struct() {
+    use std::pin::Pin;
+
+    struct SelfRef {
+        data: String,
+        // The pointer is *into* `data`
+        ptr: *const u8,
+    }
+
+    impl SelfRef {
+        fn new(s: String) -> Pin<Box<Self>> {
+            // We must first create the Box, then set the pointer.
+            let mut boxed = Box::pin(Self { data: s, ptr: std::ptr::null() });
+            let ptr = boxed.data.as_ptr();
+            // Safe because the Box is pinned (won't move)
+            unsafe { Pin::get_mut(boxed.as_mut()).ptr = ptr; }
+            boxed
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // 1. A self-referential type that opts out of Unpin
 // ---------------------------------------------------------------------------

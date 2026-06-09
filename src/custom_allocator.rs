@@ -1,7 +1,7 @@
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::collections::HashSet;
 use std::sync::Mutex;
-/*
+
 pub struct LeakTracker {
     // Delegate to the real system allocator
     inner: System,
@@ -14,6 +14,7 @@ impl LeakTracker {
     pub const fn new() -> Self {
         LeakTracker {
             inner: System,
+            // todo: fix this.
             live: Mutex::new(HashSet::new()),
         }
     }
@@ -86,4 +87,4 @@ fn main() {
 
     // Check for leaks before exiting
     GLOBAL.report_leaks();
-}*/
+}

@@ -25,7 +25,6 @@ mod binary_tree_raw;
 mod general_tree_raw;
 mod graph_raw;
 mod error_raw;
-mod error_framework;
 mod deref;
 mod pin_unpin;
 mod custom_allocator;
@@ -46,6 +45,8 @@ mod uc_refcell;
 mod uc_weak;
 mod uc_cow;
 mod fat_pointer;
+mod error_thiserror;
+mod error_anyhow;
 
 use std::iter::IntoIterator;
 use std::sync::atomic::AtomicU64;
