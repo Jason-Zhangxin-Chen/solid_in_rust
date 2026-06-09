@@ -45,6 +45,7 @@ mod uc_cell;
 mod uc_refcell;
 mod uc_weak;
 mod uc_cow;
+mod fat_pointer;
 
 use std::iter::IntoIterator;
 use std::sync::atomic::AtomicU64;
