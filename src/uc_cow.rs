@@ -137,7 +137,7 @@ fn returning_cow_value() {
     fn get_greeting(name: Option<&str>) -> Cow<'static, str> {
         match name {
             Some(n) => Cow::Owned(format!("Hello, {n}!")),  // dynamically allocated
-            None => Cow::Borrowed(GREETING),                // static reference
+            None => Cow::Borrowed(GREETING),                      // static reference
         }
     }
 

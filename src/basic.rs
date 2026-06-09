@@ -92,6 +92,13 @@ fn main() {
 // §1  PRIMITIVE TYPES & VARIABLES
 // =============================================================================
 fn section_01_primitives() {
+    // types' size.
+    // Most type in Rust are sized, known at compile time.
+    // Sized: String, i32, Dog.
+    // Unsized: str,        just bytes, length unknown.
+    // Unsized: [u8]        slice, length unknown.
+    // Unsized: dyn Trait,  concrete type erased.
+
     // ── Integer types ────────────────────────────────────────────────────────
     let a: i8 = -128; // signed   8-bit
     let b: i16 = 32_000; // signed  16-bit  (underscores for readability)
