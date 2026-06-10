@@ -400,8 +400,9 @@ fn section_11_deref_vs_as_ref() {
     }
 
     print_deref(String::from("owned"));
-    // todo: fix this.
-    // print_deref(Box::new(String::from("boxed")));
+    print_deref(*Box::new(String::from("boxed")));
+    //          ^ deref Box<String> -> String first
+    //            now S = String, String: Deref<Target = str> ✅
 
     // KEY DISTINCTION:
     //   std::fs::File::open accepts AsRef<Path> → you can pass &str, String,
