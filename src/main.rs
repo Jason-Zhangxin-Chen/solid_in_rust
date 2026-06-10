@@ -47,6 +47,7 @@ mod uc_cow;
 mod fat_pointer;
 mod error_thiserror;
 mod error_anyhow;
+mod coercion;
 
 use std::iter::IntoIterator;
 use std::sync::atomic::AtomicU64;
