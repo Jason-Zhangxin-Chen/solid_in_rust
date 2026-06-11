@@ -2297,7 +2297,8 @@ fn section_32_patterns_cheatsheet() {
     // Resources tied to scope — drop at end of block automatically
     {
         let _guard = Mutex::new(0);
-        let _ = _guard.lock().unwrap(); // lock released when _guard drops
+        let mut v = _guard.lock().unwrap(); // lock released when _guard drops
+        *v = 1;
     }
 
     // ── Typestate pattern ────────────────────────────────────────────────────

@@ -16,6 +16,8 @@ impl<T> Id<T> {
     }
 }
 
+// T in Id<T> is a "phantom type parameter" — it doesn't correspond to any actual data,
+// but it still affects the type system. The compiler treats Id<User> and Id<Post> as different.
 struct User;
 struct Post;
 
