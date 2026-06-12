@@ -1,4 +1,142 @@
-// subtyping_demo.rs
+// subtyping in rust is only about lifetimes.
+// In many OOP languages, subtyping is about classes: Cat is a subtype of Animal because you can
+// pass a Cat anywhere an Animal is expected. Rust does not have this kind of structural inheritance.
+//
+// Instead, Rust’s subtyping relationship exists solely for lifetimes.
+//
+// Rule: a type A is a subtype of B (written A <: B) if a value of type A can be safely used
+// wherever a value of type B is expected.
+//
+// And in Rust, this happens when one lifetime outlives another.
+//
+// 'long outlives 'short → 'long is a subtype of 'short (i.e., 'long <: 'short).
+//
+// Why? Because a reference that lives for 'long can safely be used in a place that only requires
+// the reference to live for the shorter 'short. The longer lifetime subsumes the shorter one.
+//
+// So subtyping in Rust boils down to: a bigger lifetime is a subtype of a smaller lifetime.
+
+// Where subtyping happens in Rust: lifetime coercions.
+// The compiler uses subtyping to decide what implicit lifetime coercions are allowed.
+// The classic coercion you already know:
+fn lifetime_coercion() {
+
+    fn shortest<'a>(x: &'a str, y: &'a str) -> &'a str {
+        if x.len() < y.len() { x } else { y }
+    }
+
+    let s1 = String::from("hello");   // 'long
+    let s2 = String::from("world");   // 'long
+    let result;
+    {
+        // r1 and r2 have distinct, shorter lifetimes, but shortest expects both arguments to
+        // have exactly the same lifetime 'a. The compiler coerces the longer outer lifetimes
+        // ('long) to the shorter inner ones ('short1/'short2), then unifies them to a common
+        // lifetime 'a. This is lifetime subtyping in action: 'long is used where 'short is expected.
+        // Let's say these inner scopes give us shorter lifetimes...
+        let r1 = &s1;   // 'short1
+        let r2 = &s2;   // 'short2
+        result = shortest(r1, r2);
+    }
+}
+
+// Variance: how subtyping flows through generic types.
+// Now, the truly tricky part: variance defines how the subtyping relationship between inner
+// lifetimes propagates through a generic type like &'a T, &'a mut T, or fn(T) -> U.
+// There are three kinds of variance:
+//
+// Variance	            Meaning
+//                                      Example
+// Covariant	        If 'a <: 'b, then Type<'a> <: Type<'b>	                &'a T
+
+// Contravariant	    If 'a <: 'b, then Type<'b> <: Type<'a> (reversed!)	    fn(T) -> &'a i32 in
+//                                                                              the argument T is… wait,
+//                                                                              better example: fn(&'a T)
+//                                                                              is contravariant in 'a
+// Invariant	        No subtyping relation at all,
+//                      even if 'a <: 'b. Type<'a> and Type<'b>
+//                      are completely different types	                        &'a mut T, UnsafeCell<T>
+
+// Covariant: &'a T
+// If 'long <: 'short, then &'long T can be used where &'short T is expected. That’s the common
+// case you can always pass a longer borrow where a shorter one is needed.
+fn covariant() {
+    fn read(val: &i32) {} // expects some lifetime, call it 'short
+
+    static X: i32 = 42;
+    let r: &'static i32 = &X; // 'static
+    read(r); // 'static <: 'short, so &'static i32 <: &'short i32, works
+}
+
+// Contravariant: function types (in argument position)
+// Function pointers / closures are contravariant in their parameter lifetimes.
+// That means the subtyping direction flips.
+fn contravariant() {
+    // Contravariance for function arguments means:
+    //
+    // If 'long <: 'short, then fn(&'short T) is a subtype of fn(&'long T).
+    //
+    // Because: a function that can accept a shorter reference is more flexible – you can
+    // pass it a longer reference (which is a subtype of the shorter one). So the function
+    // type with the shorter lifetime in its parameter is “more general”. Subtyping flips:
+    // you can use fn(&'short T) where fn(&'long T) is expected.
+
+
+    fn takes_fn(f: fn(&'static i32)) {
+        // f expects a reference that lives 'static.
+    }
+
+    // g takes a local tmp reference with a short lifetime.
+    let g: fn(&i32) = |_| {};
+    takes_fn(g); // ERROR? No, wait. This is interesting.
+
+    fn apply(f: fn(&'static str)) {
+        f("hello");
+    }
+
+    let print: fn(&str) = |s| println!("{s}"); // the lifetime elided, but it's a short anonymous lifetime
+    apply(print); // OK: fn(&str) <: fn(&'static str) because &str is contravariant in the parameter.
+}
+
+
+// Invariant: &'a mut T
+// Mutable references are invariant in their lifetime. There is no subtyping between
+// &'a mut T and &'b mut T, regardless of how 'a and 'b relate. This is the one that
+// most often bites people.
+fn invariant() {
+    fn assign(src: &mut i32, dst: &mut i32) {
+        *dst = *src;
+    }
+
+    let mut a = 1;
+    let mut b = 2;
+    let r1: &'static mut i32 = &mut a; // make it 'static for clarity (though not really possible)
+    // Actually, you can't get a real 'static mutable reference to a local, but let's pretend.
+
+
+    fn modify<'a>(r: &'a mut i32) -> &'a i32 {
+        &*r
+    }
+
+    let mut x = 5;
+    let y;
+    {
+        let mut z = 10;
+        y = modify(&mut x); // works
+        // y = modify(&mut z); // would constrain 'a to the inner block, making y invalid later
+    }
+    println!("{y}");
+
+    // Invariance ensures that if you try to use a mutable reference with a shorter lifetime
+    // in a place that expects a longer one, the compiler won’t let you. It prevents aliasing
+    // soundness holes. The classic example is std::mem::swap:
+    // If mutable references were covariant, you could pass &'long mut T and &'short mut T,
+    // and the compiler could coerce the longer one to the shorter one. That would then allow
+    // modifications through the shorter reference after the longer one supposedly ended,
+    // breaking safety. Invariance closes this hole.
+    fn swap<T>(x: &mut T, y: &mut T) {/*...*/ }
+}
+
 // Demonstrates Rust's lifetime-based subtyping and variance.
 // Only immutable references and trait objects exhibit subtyping;
 // mutable references, Cell, UnsafeCell are invariant.
@@ -33,7 +171,7 @@ fn covariance_examples() {
     let s: &'static str = "I live forever";
 
     // A function that expects a reference with ANY lifetime 'a
-    fn take_str<'a>(_s: &'a str) {
+    fn take_str(_s: &str) {
         println!("  - take_str got: a string slice");
     }
     take_str(s); // &'static str <: &'a str  ✔

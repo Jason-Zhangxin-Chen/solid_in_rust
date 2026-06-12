@@ -132,6 +132,7 @@ fn example_lifetime() {
 }
 
 // ── 4. Variance ───────────────────────────────────────────────────────────────
+// PhantomData can manually mark or force the variant over the type you defined.
 //
 // PhantomData controls whether Foo<Dog> can substitute for Foo<Animal>.
 //
@@ -146,7 +147,7 @@ use std::cell::UnsafeCell;
 
 struct TypedCell<T> {
     value: UnsafeCell<T>,
-    _marker: PhantomData<*mut T>, // forces invariance over T
+    _marker: PhantomData<*mut T>, // manually marks / forces invariance over T
 }
 
 impl<T: Copy + std::fmt::Debug> TypedCell<T> {
