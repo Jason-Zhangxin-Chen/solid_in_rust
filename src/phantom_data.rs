@@ -176,7 +176,10 @@ fn example_variance() {
 
 // ── 5. !Send / !Sync ─────────────────────────────────────────────────────────
 //
-// PhantomData<*mut ()> opts out of both Send and Sync.
+// As a raw pointer *mut or *const is !Send and !Sync, thus:
+// PhantomData<*mut ()> or PhantomData<*const ()> opts out of both Send and Sync.
+
+// Rc<T> is !Send, thus:
 // PhantomData<Rc<()>>  opts out of Send only (Rc is !Send but Sync is fine).
 
 use std::rc::Rc;
