@@ -49,6 +49,7 @@ mod error_thiserror;
 mod error_anyhow;
 mod coercion;
 mod visibility;
+mod mem_pool;
 
 use std::iter::IntoIterator;
 use std::sync::atomic::AtomicU64;
