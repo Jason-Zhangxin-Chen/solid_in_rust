@@ -12,6 +12,46 @@
 use std::cell::UnsafeCell;
 
 pub struct Pool<T> {
+    // UnsafeCell<T> vs. Cell<T> and RefCell<T>.
+
+    // Cell<T>
+    //   ├── single-threaded only
+    //   ├── T: Copy for get()
+    //   ├── swaps whole values in/out
+    //   └── NEVER gives out &T or &mut T
+    //       → designed for small Copy types: bool, i32, Option<usize>
+    //
+    // RefCell<T>
+    //   ├── single-threaded only
+    //   ├── dynamic borrow checking at runtime (panics on violation)
+    //   ├── gives out Ref<T> and RefMut<T> (smart reference wrappers)
+    //   └── overhead: runtime borrow counter per cell
+    //       → designed for single-threaded shared ownership with checked borrows
+    //
+    // UnsafeCell<T>
+    //   ├── the PRIMITIVE — all other cells are built on this
+    //   ├── no T bounds whatsoever
+    //   ├── gives out *mut T — raw pointer, no checks
+    //   ├── caller is responsible for safety invariants
+    //   └── zero runtime overhead
+    //       → designed for building custom synchronisation / data structures
+
+    // Cell<T> requires T: Copy, which would prevent storing types like Vec<u8>, String, or any
+    // non-Copy type in the pool — defeating the purpose entirely. Cell::get() returns T by value,
+    // which requires a copy. Our pool needs to return &mut T so the caller can mutate the object
+    // in place — Cell fundamentally cannot do that. Cell<T> deliberately never hands out a
+    // reference to its interior — that is its entire safety guarantee. No &T or &mut T can ever
+    // escape from a Cell. It only moves values in and out. Our PoolGuard needs to give the caller
+    // a &mut T through DerefMut — which is exactly what Cell refuses to allow.
+
+    // RefCell<T> could give out &mut T via borrow_mut(), and doesn't require T: Copy. So why not?
+    // It technically works but has two problems:
+    // Runtime borrow checking overhead — every acquire() and drop() would increment/decrement a
+    // counter and check for conflicts. For a pool meant to avoid allocation overhead, adding
+    // per-slot runtime checks is wasteful.
+    // Panic risk — if you accidentally call borrow_mut() on an already-borrowed slot, it panics
+    // at runtime. With UnsafeCell we control the invariant structurally — a slot is either in the
+
     storage: Vec<UnsafeCell<T>>,
     free:    Vec<usize>,
 }
