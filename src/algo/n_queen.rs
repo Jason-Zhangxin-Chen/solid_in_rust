@@ -90,7 +90,7 @@ fn solve_n_queens(n: usize) -> Vec<Vec<String>> {
 
 #[cfg(test)]
 mod test {
-    use crate::n_queen::solve_n_queens;
+    use crate::algo::n_queen::solve_n_queens;
 
     #[test]
     fn test_solve_n_queens() {

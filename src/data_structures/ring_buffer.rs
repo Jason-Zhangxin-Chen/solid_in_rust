@@ -153,7 +153,7 @@ impl<T> IntoIterator for RingBuffer<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ring_buffer::RingBuffer;
+    use crate::data_structures::ring_buffer::RingBuffer;
 
     #[test]
     fn test_ring_buffer() {

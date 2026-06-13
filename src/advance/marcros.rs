@@ -1020,13 +1020,13 @@ macro_rules! call_double {
     // Capture an expression.
     ($val:expr) => {
         // $crate ensures the correct path even when used from another crate.
-        $crate::marcros::helpers::double($val)
+        $crate::advance::marcros::helpers::double($val)
     };
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::marcros::helpers;
+    use crate::advance::marcros::helpers;
 
 #[test]
     fn test_macro() {

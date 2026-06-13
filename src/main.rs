@@ -1,59 +1,12 @@
-
-mod iterator;
-mod my_container;
-mod my_container2;
-mod sorts;
-mod single_linked_list;
-mod single_linked_list_nonnull;
-mod single_linked_list_raw;
-mod double_linked_list;
-mod binary_tree;
-mod stack;
-mod ring_buffer;
-mod general_tree;
-mod graph;
-mod heap;
-mod hash_map;
-mod n_queen;
-mod fib;
-mod smart_pointers_methods;
-mod bits;
-mod merkle_tree;
-mod trie_db;
-mod double_linked_list_raw;
-mod binary_tree_raw;
-mod general_tree_raw;
-mod graph_raw;
-mod error_raw;
-mod deref;
-mod pin_unpin;
-mod custom_allocator;
-mod sub_typing;
-mod marcros;
-mod order_book_state_root;
 mod basic;
-mod pcm;
-mod tcp_service;
-mod phantom_data;
-mod error_bitmask;
-mod common_issues;
-mod uc_box;
-mod uc_rc;
-mod uc_arc;
-mod uc_cell;
-mod uc_refcell;
-mod uc_weak;
-mod uc_cow;
-mod fat_pointer;
-mod error_thiserror;
-mod error_anyhow;
-mod coercion;
-mod visibility;
-mod mem_pool;
+mod data_structures;
+mod algo;
+mod advance;
+mod concurency;
+mod smart_pointers;
+mod design_patterns;
 
 use std::iter::IntoIterator;
-use std::sync::atomic::AtomicU64;
-
 #[derive(Debug)]
 struct MyStore<T> {
     store: Vec<T>,
