@@ -5,3 +5,4 @@ pub mod marcros;
 mod phantom_data;
 mod pin_unpin;
 mod sub_typing;
+mod blanket_implementation;

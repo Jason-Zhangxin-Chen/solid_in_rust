@@ -5,6 +5,7 @@ mod advance;
 mod concurency;
 mod smart_pointers;
 mod design_patterns;
+mod mistakes;
 
 use std::iter::IntoIterator;
 #[derive(Debug)]
