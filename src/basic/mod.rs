@@ -6,3 +6,4 @@ mod error_thiserror;
 mod fat_pointer;
 mod iterator;
 mod visibility;
+mod all_about_trait;
