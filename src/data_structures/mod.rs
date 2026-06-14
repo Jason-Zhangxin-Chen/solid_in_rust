@@ -19,3 +19,4 @@ mod single_linked_list_nonnull;
 mod single_linked_list_raw;
 mod stack;
 mod trie_db;
+mod mem_leak;

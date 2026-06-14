@@ -1140,6 +1140,23 @@ fn section_16_associated_types() {
 // =============================================================================
 // §17  CLOSURES
 // =============================================================================
+
+// The std fn Traits:
+// pub trait FnOnce<Args> {
+//     type Output;
+//     extern "rust-call" fn call_once(self, args: Args) -> Self::Output;
+// }
+//
+// pub trait FnMut<Args>: FnOnce<Args> {
+//     extern "rust-call" fn call_mut(&mut self, args: Args) -> Self::Output;
+// }
+//
+// pub trait Fn<Args>: FnMut<Args> {
+//     extern "rust-call" fn call(&self, args: Args) -> Self::Output;
+// }
+
+// Fn is a FnMut, and FnMut is a FnOnce.
+
 fn apply_twice<F>(f: F, x: i32) -> i32
 where
     F: Fn(i32) -> i32,
