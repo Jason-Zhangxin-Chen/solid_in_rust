@@ -6,6 +6,7 @@ mod concurency;
 mod smart_pointers;
 mod design_patterns;
 mod mistakes;
+mod std_traits;
 
 use std::iter::IntoIterator;
 #[derive(Debug)]
