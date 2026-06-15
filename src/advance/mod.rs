@@ -7,3 +7,4 @@ mod pin_unpin;
 mod sub_typing;
 mod blanket_impl;
 mod AsRef;
+mod serialize_deserialize;
