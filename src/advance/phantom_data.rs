@@ -1,7 +1,50 @@
 use std::marker::PhantomData;
 
 // ── 1. Unused type parameter ──────────────────────────────────────────────────
-//
+// Type with versions:
+// Different API versions - empty enums, just types
+enum V1 {}
+enum V2 {}
+
+// Same runtime data, but different API behavior at compile time
+struct ApiClient<Version> {
+    endpoint: String,
+    // We don't store a "Version" value, but we need Rust to know
+    // this struct is parameterized by Version
+    _version: PhantomData<Version>,
+}
+
+impl ApiClient<V1> {
+    fn get_user(&self, id: u64) -> String {
+        format!("v1/user/{}", id)  // old format
+    }
+}
+
+impl ApiClient<V2> {
+    fn get_user(&self, id: u64) -> String {
+        format!("v2/users/{}", id)  // new format
+    }
+}
+
+fn type_with_version() {
+    let client_v1: ApiClient<V1> = ApiClient {
+        endpoint: "https://api.example.com".to_string(),
+        _version: PhantomData,
+    };
+
+    let client_v2: ApiClient<V2> = ApiClient {
+        endpoint: "https://api.example.com".to_string(),
+        _version: PhantomData,
+    };
+
+    println!("{}", client_v1.get_user(42));  // v1/user/42
+    println!("{}", client_v2.get_user(42));  // v2/users/42
+
+    // These are DIFFERENT TYPES - you can't mix them up!
+    // let wrong: ApiClient<V1> = client_v2; // ERROR!
+}
+
+
 // Id<User> and Id<Post> both wrap a u64, but they are distinct types.
 // The compiler will reject passing a PostId where a UserId is expected.
 
