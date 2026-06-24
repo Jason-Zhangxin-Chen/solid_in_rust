@@ -7,3 +7,4 @@ mod fat_pointer;
 mod iterator;
 mod visibility;
 mod all_about_trait;
+mod basic;
