@@ -234,7 +234,7 @@ fn blanket_impl_bridging_traits() {
 
 // Marker and auto-traits (Send, Sync, Unpin)
 // What are auto‑traits?
-// Send, Sync, and Unpin are marker traits—they have no methods. The compiler doesn’t wait for
+// Send, Sync, and Unpin are marker traits — they have no methods. The compiler doesn’t wait for
 // you to implement them; it automatically derives them for your type if all its fields satisfy
 // the trait. This is like a compile‑time blanket impl tailored to each type. If even one field
 // is not Send, the whole type becomes !Send, and the compiler will prevent you from

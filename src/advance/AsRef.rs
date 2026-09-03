@@ -1,4 +1,5 @@
-// AsRef<T> is a trait for cheap, non‑ownership‑consuming reference‑to‑reference conversions.
+// AsRef<T> is a trait for cheap, non‑ownership‑consuming, explicit reference‑to‑reference
+// conversions.
 // It lets you turn &self into &T in a generic way, so a function can accept many different types
 // that can all be “viewed as” a reference to T
 
@@ -91,7 +92,8 @@ fn as_ref_converting_string_types() {
 }
 
 // 5. AsRef vs Deref (and why not just use Deref)
-// Deref is implicit and can only have one target. It’s meant for “smart pointer” semantics (e.g., Box<T> → T).
+// Deref is implicit and can only have one target. It’s meant for “smart pointer” semantics
+// (e.g., Box<T> → T).
 //
 // AsRef is explicit and can be implemented multiple times for different target types. For example,
 // String implements AsRef<str>, AsRef<[u8]>, AsRef<Path>, etc.

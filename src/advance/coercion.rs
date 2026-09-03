@@ -146,7 +146,7 @@ fn deref_coercion_custom_types() {
     }
 
     let b = MyBox(String::from("hello"));
-    let s: &str = &b;   // MyBox<String> -> String -> str — two-hop deref coercion!
+    let s : &str = &b;   // &MyBox<String> -> &String -> &str — two-hop deref coercion!
 
     fn greet(s: &str) { println!("{s}"); }
     greet(&b);          // works — coercion fires automatically
@@ -158,7 +158,7 @@ fn deref_coercion_custom_types() {
 // Deref                            &Vec<T>                     &[T]
 // Deref                            &Box<T>                     &T
 // Deref chain                      &Box<String>                &str
-// Unsized                          &[T; N]                      &[T]
+// Unsized                          &[T; N]                     &[T]
 // Unsized                          &T (concrete)               &dyn Trait
 // Unsized                          Box<T>                      Box<dyn Trait>
 // Mutability                       &mut T                      &T

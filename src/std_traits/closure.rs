@@ -3,6 +3,7 @@
 // FnOnce can be called once (consumes captured values).
 // FnMut can be called multiple times with mutable capture.
 // Fn can be called any number of times with shared access.
+// Fn -> FnMut -> FnOnce
 fn fn_traits() {
     // FnOnce — consumes captured variable, callable once only
     fn call_once(f: impl FnOnce()) { f(); }

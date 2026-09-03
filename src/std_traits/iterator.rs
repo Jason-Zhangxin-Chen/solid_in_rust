@@ -1,4 +1,5 @@
-// Iterators — Iterator (implement next(), get 70+ methods free), IntoIterator (enables for loops),
+// Iterators — Iterator (implement next(), get 70+ methods free),
+// IntoIterator (enables for loops),
 // FromIterator (enables .collect()). These three form a complete system.
 
 

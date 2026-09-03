@@ -174,14 +174,13 @@ fn example_lifetime() {
     // `iter` cannot outlive `data` — the borrow checker sees 'a.
 }
 
-// ── 4. Variance ───────────────────────────────────────────────────────────────
+// ── 4. Variance (lifetime subtyping) ─────────────────────────────────────────────
 // PhantomData can manually mark or force the variant over the type you defined.
 //
-// PhantomData controls whether Foo<Dog> can substitute for Foo<Animal>.
 //
-//   PhantomData<T>      → covariant  (like &T)     — Foo<Dog> usable as Foo<Animal>
-//   PhantomData<*mut T> → invariant  (like &mut T)  — Foo<Dog> unrelated to Foo<Animal>
-//   PhantomData<fn(T)>  → contravariant             — Foo<Animal> usable as Foo<Dog>
+// PhantomData<T>       → covariant      Foo<&'static str> usable as Foo<&'short str>
+// PhantomData<*mut T>  → invariant      Foo<&'static str> and Foo<&'short str> unrelated
+// PhantomData<fn(T)>   → contravariant  Foo<&'short str> usable as Foo<&'static str>
 //
 // TypedCell must be invariant: exposing &mut T while being covariant
 // would let you smuggle a short-lived reference into a long-lived slot.

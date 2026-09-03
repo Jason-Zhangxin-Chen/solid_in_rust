@@ -58,14 +58,14 @@ fn lifetime_coercion() {
 //                      are completely different types	                        &'a mut T, UnsafeCell<T>
 
 // Covariant: &'a T
-// If 'long <: 'short, then &'long T can be used where &'short T is expected. That’s the common
+// If 'long >: 'short, then &'long T can be used where &'short T is expected. That’s the common
 // case you can always pass a longer borrow where a shorter one is needed.
 fn covariant() {
     fn read(val: &i32) {} // expects some lifetime, call it 'short
 
     static X: i32 = 42;
     let r: &'static i32 = &X; // 'static
-    read(r); // 'static <: 'short, so &'static i32 <: &'short i32, works
+    read(r); // 'static >: 'short, so &'static i32 >: &'short i32, works
 }
 
 // Contravariant: function types (in argument position)
@@ -74,7 +74,8 @@ fn covariant() {
 fn contravariant() {
     // Contravariance for function arguments means:
     //
-    // If 'long <: 'short, then fn(&'short T) is a subtype of fn(&'long T).
+    // If 'long >: 'short, then function type fn(&'long T) <: fn(&'short T), function type with 
+    // lifetime 'long is a subtype of function type with lifetime 'short.
     //
     // Because: a function that can accept a shorter reference is more flexible – you can
     // pass it a longer reference (which is a subtype of the shorter one). So the function

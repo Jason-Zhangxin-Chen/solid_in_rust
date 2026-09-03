@@ -72,7 +72,7 @@ struct Point {x: f64, y: f64} // can't print or compare.
 // Yes, it does. The derived implementation of PartialEq for Coord will compare the x fields of both
 // instances and the y fields of both instances, and return true if both pairs of fields are equal,
 // and false otherwise.
-// Node: Only add copy for small, cheap types. Copy is critical for types that are used in large
+// Note: Only add copy for small, cheap types. Copy is critical for types that are used in large
 // quantities, such as small numeric types (e.g., i32, f64) or simple structs that contain only
 // Copy types. For larger or more complex types, implementing Copy can lead to unintended
 // consequences, such as accidentally copying large amounts of data when you intended to move it.

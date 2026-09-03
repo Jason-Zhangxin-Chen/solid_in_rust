@@ -4,7 +4,7 @@ use std::thread;
 // you want to call a method that takes ownership / consumes data of self on a reference.
 use std::thread::JoinHandle;
 struct Worker{
-    thread:JoinHandle<()>,
+    thread: JoinHandle<()>,
     id: usize,
 }
 
