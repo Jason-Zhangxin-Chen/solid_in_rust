@@ -49,7 +49,7 @@ macro_rules! say_hello {
 }
 
 macro_rules! greet {
-    // $name captures one expression fragment
+    // $name captures one expression fragment - can be a string, number, or any expression
     ($name:expr) => {
         println!("Hello, {}!", $name);
     };
@@ -60,7 +60,11 @@ fn demo_01_basic_syntax() {
 
     say_hello!();           // expands to: println!("Hello, world!");
     greet!("Alice");        // expands to: println!("Hello, Alice!");
-    greet!(42);             // any expr works — even numbers
+    greet!(42);             // any expr works — even numbers;
+    greet!(1 + 2);          // expressions are evaluated;
+    greet!(Box::new(5));    // expressions can be complex;
+    greet!["Eric"];         // square brackets are valid delimiters too;
+    greet!{"Bob"}           // curly braces - equally legal, no trailing ';' needed.
 }
 
 // =============================================================================
@@ -236,6 +240,9 @@ fn demo_03_repetition() {
     greet_optional!("Alice", "");
     greet_optional!("Bob", "Dr.");
 
+    let v: Vec<i32> = my_vec!{10, 20, 30,};
+    println!("  my_vec = {:?}", v);
+
     let v: Vec<i32> = my_vec![10, 20, 30];
     println!("  my_vec = {:?}", v);
 
@@ -389,6 +396,29 @@ fn demo_06_recursive_macros() {
     const N: usize = count!(a b c d e);
     println!("  count of [a b c d e] = {}", N);
 
+    // Arm3 of reverse.
+    let v = reverse!(1, 2, 3);
+    // expands to: reverse!([1, 2, 3] [])
+    println!("{:?}", v); // [3, 2, 1]
+
+    let v2 = reverse!("a", "b", "c");
+    println!("{:?}", v2); // ["c", "b", "a"]
+
+    let v3 = reverse!(1 + 1, 2 * 2, 3 - 1);  // arbitrary expressions work too
+    println!("{:?}", v3); // [2, 4, 2]
+
+    // Arm1 of reverse
+    let v = reverse!([1, 2, 3] []);
+    // head = 1, tail = [2, 3], acc = []
+    // expands to: reverse!([2, 3] [1])
+    println!("{:?}", v); // [3, 2, 1]
+
+    // Arm2 of reverse
+    let v = reverse!([1, 2, 3] []);
+    // head = 1, tail = [2, 3], acc = []
+    // expands to: reverse!([2, 3] [1])
+    println!("{:?}", v); // [3, 2, 1]
+
     let reversed = reverse!(1, 2, 3, 4, 5);
     println!("  reversed = {:?}", reversed);
 }
@@ -443,6 +473,12 @@ fn demo_07_tt_munching() {
     println!("\n=== 07: TT Munching ===");
 
     let x = 10;
+    if x > 5 {
+        println!("  x is greater than 5");
+    } else {
+        println!("  x is not greater than 5");
+    }
+
     simple_if!(
         if x > 5 => {
             println!("  x is greater than 5");
